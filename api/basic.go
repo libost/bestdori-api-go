@@ -136,7 +136,7 @@ func (r Region) Idx() int {
 	return indexHelper(r.String())
 }
 
-// Any 用于兼容服务端可能混用 int 和 string 的标识符字段
+// Any is a type that can hold any JSON value, including strings and numbers. It is used to handle fields that can have different types in the JSON data.
 type Any string
 
 func (a *Any) UnmarshalJSON(data []byte) error {
@@ -163,12 +163,12 @@ func (a *Any) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-// 方便调用方转换或打印
+// String returns the string representation of the Any value.
 func (a Any) String() string {
 	return string(a)
 }
 
-// 如果有些调用方偶尔确实需要当成 int 用，顺手提供一个辅助方法会非常贴心
+// Int attempts to convert the Any value to an int. It returns an error if the conversion fails.
 func (a Any) Int() (int, error) {
 	return strconv.Atoi(string(a))
 }

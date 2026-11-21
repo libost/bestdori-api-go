@@ -352,3 +352,8 @@ func (c *Cards) GetReleaseTime(region Region) time.Time {
 func (c *Card) GetGachaText(region Region) string {
 	return c.GachaText[region.Idx()]
 }
+
+// GetCard returns the card for the given NewCards. It returns an error if the card is not found or if the API call fails.
+func (n *NewCards) GetCard(ctx context.Context) (*Card, error) {
+	return getCard(ctx, n.a, strconv.Itoa(n.id))
+}
