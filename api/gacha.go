@@ -102,6 +102,7 @@ type GachaPaymentMethods struct {
 	DiscountType     int    `json:"discountType"`
 }
 
+// InitGachas initializes the GachasMap by fetching data from the API and populating the GachasMap. It returns an error if the request fails or if the response cannot be unmarshaled.
 func (a *Api) InitGachas(ctx context.Context) (*GachasMap, error) {
 	resp, err := a.do(ctx, http.MethodGet, gachaURL)
 	if err != nil {
@@ -120,6 +121,11 @@ func (a *Api) InitGachas(ctx context.Context) (*GachasMap, error) {
 	return &gachas, nil
 }
 
+// GetGacha retrieves a specific Gacha from the GachasMap by its ID. It returns an error if the Gacha is not found.
+//
+// Be aware that the struct returned by this function is a summary of the gacha data and does not contain all the information available in the API.
+//
+// Use (api.Api).GetGacha(ctx, gachaID) to get the full gacha data.
 func (g *GachasMap) GetGacha(gachaID string) (*Gachas, error) {
 	gacha, ok := (*g)[gachaID]
 	if !ok {
@@ -128,6 +134,7 @@ func (g *GachasMap) GetGacha(gachaID string) (*Gachas, error) {
 	return &gacha, nil
 }
 
+// GetGacha retrieves a specific Gacha by its ID. It returns an error if the Gacha is not found or if the API call fails.
 func (a *Api) GetGacha(ctx context.Context, gachaID string) (*Gacha, error) {
 	resp, err := a.do(ctx, http.MethodGet, "https://bestdori.com/api/gacha/"+gachaID+".json")
 	if err != nil {
@@ -142,6 +149,9 @@ func (a *Api) GetGacha(ctx context.Context, gachaID string) (*Gacha, error) {
 	return &gacha, nil
 }
 
+// IsAvailable checks if the Gachas is available in the specified region.
+//
+// It is recommended to use this method before calling functions like GetTitle.
 func (g *Gachas) IsAvailable(region Region) bool {
 	if g.GachaName[region.Idx()] == "" {
 		return false
@@ -149,6 +159,9 @@ func (g *Gachas) IsAvailable(region Region) bool {
 	return true
 }
 
+// IsAvailable checks if the Gacha is available in the specified region.
+//
+// It is recommended to use this method before calling functions like GetTitle.
 func (g *Gacha) IsAvailable(region Region) bool {
 	if g.GachaName[region.Idx()] == "" {
 		return false
@@ -156,50 +169,66 @@ func (g *Gacha) IsAvailable(region Region) bool {
 	return true
 }
 
+// GetGacha retrieves the Gacha associated with the RecentGachas. It returns an error if the Gacha is not found or if the API call fails.
 func (r *RecentGachas) GetGacha(ctx context.Context) (*Gacha, error) {
 	return r.api.GetGacha(ctx, r.id)
 }
 
+// GetGacha retrieves the detailed information associated with the Gachas. It returns an error if the Gacha is not found or if the API call fails.
 func (g *Gachas) GetGacha(ctx context.Context) (*Gacha, error) {
 	return g.api.GetGacha(ctx, g.id)
 }
 
+// GetTitle retrieves the title of the Gachas in the specified region. It returns an empty string if the Gachas is not available in that region.
 func (g *Gachas) GetTitle(region Region) string {
 	return g.GachaName[region.Idx()]
 }
 
+// GetTitle retrieves the title of the Gacha in the specified region. It returns an empty string if the Gacha is not available in that region.
 func (g *Gacha) GetTitle(region Region) string {
 	return g.GachaName[region.Idx()]
 }
 
+// GetPublishTime retrieves the publish time of the Gachas in the specified region. It returns a zero time if the Gachas is not available in that region.
 func (g *Gachas) GetPublishTime(region Region) time.Time {
 	return g.PublishedAt[region.Idx()].Time
 }
 
+// GetPublishTime retrieves the publish time of the Gacha in the specified region. It returns a zero time if the Gacha is not available in that region.
 func (g *Gacha) GetPublishTime(region Region) time.Time {
 	return g.PublishedAt[region.Idx()].Time
 }
 
+// GetCloseTime retrieves the close time of the Gachas in the specified region. It returns a zero time if the Gachas is not available in that region.
 func (g *Gachas) GetCloseTime(region Region) time.Time {
 	return g.ClosedAt[region.Idx()].Time
 }
 
+// GetCloseTime retrieves the close time of the Gacha in the specified region. It returns a zero time if the Gacha is not available in that region.
 func (g *Gacha) GetCloseTime(region Region) time.Time {
 	return g.ClosedAt[region.Idx()].Time
 }
 
+// GetType retrieves the type of the Gachas.
 func (g *Gachas) GetType() string {
 	return g.Type
 }
 
+// GetType retrieves the type of the Gacha.
 func (g *Gacha) GetType() string {
 	return g.Type
 }
 
+// GetBannerURL retrieves the banner URL of the Gachas in the specified region. It returns an empty string if the Gachas is not available in that region.
+//
+// If the banner URL is not valid, it will attempt to use a fallback URL. If both URLs are invalid, it will return an empty string.
 func (g *Gachas) GetBannerURL(ctx context.Context, region Region) string {
 	return getBannerURL(ctx, g.api, region, g.BannerAssetBundleName, g.ResourceName)
 }
 
+// GetBannerURL retrieves the banner URL of the Gacha in the specified region. It returns an empty string if the Gacha is not available in that region.
+//
+// If the banner URL is not valid, it will attempt to use a fallback URL. If both URLs are invalid, it will return an empty string.
 func (g *Gacha) GetBannerURL(ctx context.Context, region Region) string {
 	return getBannerURL(ctx, g.api, region, g.BannerAssetBundleName, g.ResourceName)
 }
@@ -215,6 +244,9 @@ func getBannerURL(ctx context.Context, api *Api, region Region, bannerAssetBundl
 	return url
 }
 
+// GetBannerFile retrieves the banner file of the Gachas in the specified region. It returns an error if the banner file cannot be fetched or if the banner URL is not valid.
+//
+// If no valid banner URL is found for the specified region, it will return an error indicating that the banner URL is not available.
 func (g *Gachas) GetBannerFile(ctx context.Context, region Region) ([]byte, error) {
 	url := g.GetBannerURL(ctx, region)
 	if url == "" {
@@ -223,6 +255,9 @@ func (g *Gachas) GetBannerFile(ctx context.Context, region Region) ([]byte, erro
 	return getGachaBannerFile(ctx, g.api, url)
 }
 
+// GetBannerFile retrieves the banner file of the Gacha in the specified region. It returns an error if the banner file cannot be fetched or if the banner URL is not valid.
+//
+// If no valid banner URL is found for the specified region, it will return an error indicating that the banner URL is not available.
 func (g *Gacha) GetBannerFile(ctx context.Context, region Region) ([]byte, error) {
 	url := g.GetBannerURL(ctx, region)
 	if url == "" {
@@ -243,10 +278,19 @@ func getGachaBannerFile(ctx context.Context, api *Api, url string) ([]byte, erro
 	return io.ReadAll(resp.Body)
 }
 
+// GetNewCards retrieves the new cards associated with the Gachas. It returns a slice of NewCards.
 func (g *Gachas) GetNewCards() []NewCards {
-	return g.NewCards
+	var newCards []NewCards
+	for _, card := range g.NewCards {
+		newCards = append(newCards, NewCards{
+			a:  g.api,
+			id: card.id,
+		})
+	}
+	return newCards
 }
 
+// GetNewCards retrieves the new cards associated with the Gacha. It returns a slice of NewCards.
 func (g *Gacha) GetNewCards() []NewCards {
 	var newCards []NewCards
 	for _, card := range g.NewCards {
@@ -258,26 +302,40 @@ func (g *Gacha) GetNewCards() []NewCards {
 	return newCards
 }
 
+// GetDescription retrieves the description of the Gacha localized in the specified region. It returns an empty string if the Gacha is not available in that region.
 func (g *Gacha) GetDescription(region Region) string {
 	return g.Description[region.Idx()]
 }
 
+// GetAnnotation retrieves the annotation of the Gacha localized in the specified region. It returns an empty string if the Gacha is not available in that region.
 func (g *Gacha) GetAnnotation(region Region) string {
 	return g.Annotation[region.Idx()]
 }
 
+// GetGachaPeriod retrieves the gacha period string of the Gacha localized in the specified region. It returns an empty string if the Gacha is not available in that region.
 func (g *Gacha) GetGachaPeriod(region Region) string {
 	return g.GachaPeriod[region.Idx()]
 }
 
+// GetCardSpecifiedWeight retrieves the card-specific weight details of the Gacha. It returns a GachaDetailsMap containing the weight information for each card in the Gacha.
+//
+// It can be used to determine the probability of obtaining specific cards during a gacha draw.
 func (g *Gacha) GetCardSpecifiedWeight() GachaDetailsMap {
 	return g.Details[0]
 }
 
+// GetRaritySpecifiedWeight retrieves the rarity-specific weight details of the Gacha. It returns a GachaRatesMap containing the weight information for each rarity level in the Gacha.
+//
+// It can be used to determine the probability of obtaining cards of specific rarities during a gacha draw.
 func (g *Gacha) GetRaritySpecifiedWeight() GachaRatesMap {
 	return g.Rates[0]
 }
 
+// GetPaymentMethods retrieves the payment methods associated with the Gacha. It returns a slice of GachaPaymentMethods, each representing a different payment option available for the gacha draw.
+//
+// It can be used to determine the cost and behavior of different gacha draw options.
+//
+// It can also be used to emulate gacha draws by providing the selected payment method to the EmulateGachaDraw function.
 func (g *Gacha) GetPaymentMethods() []GachaPaymentMethods {
 	return g.PaymentMethods
 }
@@ -289,6 +347,11 @@ type gachaMap struct {
 	Rarity      int
 }
 
+// EmulateGachaDraw simulates a gacha draw based on the specified payment methods. It returns a slice of card IDs representing the results of the gacha draw.
+//
+// The paymentMethods parameter specifies the payment method and count for the gacha draw. The function uses the card-specific and rarity-specific weights to determine the outcome of the draw.
+//
+// It can be used to simulate gacha draws without making actual API calls, allowing users to test different payment methods and understand the probabilities of obtaining specific cards or rarities.
 func (g *Gacha) EmulateGachaDraw(paymentMethods GachaPaymentMethods) ([]string, error) {
 	var gachaMaps []gachaMap
 	details := g.GetCardSpecifiedWeight()
