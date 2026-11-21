@@ -19,6 +19,8 @@ go get github.com/libost/bestdori-api-go
 ```
 
 ## Example
+>[!NOTE]
+> See the [example](example) directory for more usage examples.  
 
 ```go
 package main

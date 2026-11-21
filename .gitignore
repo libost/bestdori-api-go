@@ -1,2 +1,8 @@
+# Ignore binary files
 *.exe
+
+# Ignore IDE files
 .vscode
+
+# Ignore example output files
+example_output
