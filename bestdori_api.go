@@ -12,7 +12,7 @@ import (
 // code importing the api subpackage can use the same API.
 type API = api.Api
 
-// NewAPI creates a Bestdori API client.
-func NewAPI(proxy string, timeout time.Duration) *API {
+// NewClient creates a Bestdori API client.
+func NewClient(proxy string, timeout time.Duration) *API {
 	return api.NewApi(proxy, timeout)
 }
