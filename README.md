@@ -39,6 +39,11 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	if !card.IsAvailable(api.RegionCN) {
+		fmt.Println("Card is not available in CN region")
+		return
+	}
+	fmt.Println("Card is available in CN region")
 	fmt.Println(card.GetCardName(api.RegionCN))
 }
 ```
