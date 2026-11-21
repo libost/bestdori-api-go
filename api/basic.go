@@ -295,3 +295,18 @@ func (a *Api) do(ctx context.Context, method, requestURL string) (*http.Response
 	}
 	return a.client.Do(req)
 }
+
+func isValidPNG(ctx context.Context, api *Api, url string) bool {
+	resp, err := api.do(ctx, http.MethodHead, url)
+	if err != nil {
+		return false
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return false
+	}
+	if contentType := resp.Header.Get("Content-Type"); contentType != "image/png" {
+		return false
+	}
+	return true
+}

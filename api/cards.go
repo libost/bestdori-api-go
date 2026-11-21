@@ -322,22 +322,6 @@ func (c *Cards) GetArtsFile(ctx context.Context, region Region) ([]byte, []byte,
 	return arts[0], arts[1], nil
 }
 
-func isValidPNG(ctx context.Context, api *Api, url string) bool {
-	resp, err := api.do(ctx, http.MethodHead, url)
-	if err != nil {
-		return false
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
-		return false
-	}
-	contentType := resp.Header.Get("Content-Type")
-	if contentType != "image/png" {
-		return false
-	}
-	return true
-}
-
 // GetReleaseTime returns the release time of the card for the given region.
 func (c *Card) GetReleaseTime(region Region) time.Time {
 	return c.ReleasedAt[region.Idx()].Time
