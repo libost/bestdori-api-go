@@ -580,13 +580,15 @@ func (r *Rates) GetPredictCutoff(ctx context.Context, event Event) (EventTracker
 		}
 	}
 	predicted = predicted[lastEqualIndex:] // 截断预测值，去掉与实际值相同的部分
-	predicted = append(
-		predicted,
-		PredictCutoff{
-			Time:    timeEnd,
-			Ep:      predicted[len(predicted)-1].Ep,
-			Percent: 1.0,
-		},
-	)
-	return tracker, EventPredictedTracker{}, nil
+	if predicted[len(predicted)-1].Time < timeEnd {
+		predicted = append(
+			predicted,
+			PredictCutoff{
+				Time:    timeEnd,
+				Ep:      predicted[len(predicted)-1].Ep,
+				Percent: 1.0,
+			},
+		)
+	}
+	return tracker, EventPredictedTracker{PredictCutoff: predicted}, nil
 }
