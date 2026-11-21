@@ -1,5 +1,7 @@
 # Bestdori API for Go
-[![Go Reference](https://pkg.go.dev/badge/github.com/libost/bestdori-api-go.svg)](https://pkg.go.dev/github.com/libost/bestdori-api-go)  
+[![Go Reference](https://pkg.go.dev/badge/github.com/libost/bestdori-api-go.svg)](https://pkg.go.dev/github.com/libost/bestdori-api-go)
+[![Go Version](https://img.shields.io/badge/Go-1.27-blue.svg)](go.mod)
+
 A Go library for interacting with the Bestdori API.
 
 >[!IMPORTANT]
@@ -40,3 +42,12 @@ func main() {
 	fmt.Println(card.GetCardName(api.RegionCN))
 }
 ```
+
+## Features
+
+- Zero dependencies, only the standard library is used.
+- Easy to use and well-documented.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
