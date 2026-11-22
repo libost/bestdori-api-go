@@ -25,6 +25,7 @@ const (
 	songsURL      = "https://bestdori.com/api/songs/all.5.json"
 	comicsURL     = "https://bestdori.com/api/comics/all.5.json"
 	songsMetaURL  = "https://bestdori.com/api/songs/meta/all.5.json"
+	loginBonusURL = "https://bestdori.com/api/loginCampaigns/all.5.json"
 )
 
 // Tiers for China
@@ -95,8 +96,23 @@ func (d Difficulty) String() string {
 	return string(d)
 }
 
+// Color returns the color associated with the difficulty level.
+//
+// The color is represented as a hexadecimal string.
+func (d Difficulty) Color() string {
+	return difficultyColors[d.Idx()]
+}
+
 func (d Difficulty) Idx() int {
 	return indexHelper(d.String())
+}
+
+var difficultyColors = [...]string{
+	"#3076F8", // Easy
+	"#188A28", // Normal
+	"#D1861A", // Hard
+	"#FD2A30", // Expert
+	"#F12199", // Special
 }
 
 type CardStatus string
@@ -303,6 +319,21 @@ func (a *Api) do(ctx context.Context, method, requestURL string) (*http.Response
 	req, err := http.NewRequestWithContext(ctx, method, requestURL, nil)
 	if err != nil {
 		return nil, err
+	}
+	return a.client.Do(req)
+}
+
+func (a *Api) update(ctx context.Context, method, requestURL, etag string) (*http.Response, error) {
+	if a == nil || a.client == nil {
+		a = defaultApi
+	}
+
+	req, err := http.NewRequestWithContext(ctx, method, requestURL, nil)
+	if err != nil {
+		return nil, err
+	}
+	if etag != "" {
+		req.Header.Set("If-None-Match", etag)
 	}
 	return a.client.Do(req)
 }
