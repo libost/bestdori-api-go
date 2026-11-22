@@ -237,38 +237,38 @@ func (e *Events) IsAvailable(region Region) bool {
 	return true
 }
 
-// GetEventTitle returns the title of the event for the given region.
-func (e *Events) GetEventTitle(region Region) string {
+// GetTitle returns the title of the event for the given region.
+func (e *Events) GetTitle(region Region) string {
 	return e.EventName[indexHelper(region.String())]
 }
 
-// GetEventStartTime returns the start time of the event for the given region.
-func (e *Events) GetEventStartTime(region Region) time.Time {
+// GetStartTime returns the start time of the event for the given region.
+func (e *Events) GetStartTime(region Region) time.Time {
 	return e.StartAt[indexHelper(region.String())].Time
 }
 
-// GetEventEndTime returns the end time of the event for the given region.
-func (e *Events) GetEventEndTime(region Region) time.Time {
+// GetEndTime returns the end time of the event for the given region.
+func (e *Events) GetEndTime(region Region) time.Time {
 	return e.EndAt[indexHelper(region.String())].Time
 }
 
-// GetEventBannerURL returns the URL of the event banner for the given region.
-func (e *Events) GetEventBannerURL(region Region) string {
+// GetBannerURL returns the URL of the event banner for the given region.
+func (e *Events) GetBannerURL(region Region) string {
 	return "https://bestdori.com/assets/" + region.String() + "/events/" + e.AssetBundleName + "/images_rip/banner.png"
 }
 
-// GetEventBannerFile retrieves the event banner image file for the given region.
-func (e *Events) GetEventBannerFile(ctx context.Context, region Region) ([]byte, error) {
-	return getBannerFile(ctx, e.api, e.GetEventBannerURL(region))
+// GetBannerFile retrieves the event banner image file for the given region.
+func (e *Events) GetBannerFile(ctx context.Context, region Region) ([]byte, error) {
+	return getBannerFile(ctx, e.api, e.GetBannerURL(region))
 }
 
-// GetEventType returns the type of the event.
-func (e *Events) GetEventType(region Region) string {
+// GetType returns the type of the event.
+func (e *Events) GetType(region Region) string {
 	return e.EventType
 }
 
-// GetEventAttribute returns the attribute and its bonus percentage for the event.
-func (e *Events) GetEventAttribute() (string, int) {
+// GetAttribute returns the attribute and its bonus percentage for the event.
+func (e *Events) GetAttribute() (string, int) {
 	return e.Attribute[0].Attribute, e.Attribute[0].Percent
 }
 
@@ -317,47 +317,48 @@ func (e *Event) IsAvailable(region Region) bool {
 	return true
 }
 
-// GetEventTitle returns the title of the event for the given region.
-func (e *Event) GetEventTitle(region Region) string {
+// GetTitle returns the title of the event for the given region.
+func (e *Event) GetTitle(region Region) string {
 	return e.EventName[indexHelper(region.String())]
 }
 
-// GetEventStartTime returns the start time of the event for the given region.
-func (e *Event) GetEventStartTime(region Region) time.Time {
+// GetStartTime returns the start time of the event for the given region.
+func (e *Event) GetStartTime(region Region) time.Time {
 	return e.StartAt[indexHelper(region.String())].Time
 }
 
-// GetEventEndTime returns the end time of the event for the given region.
-func (e *Event) GetEventEndTime(region Region) time.Time {
+// GetEndTime returns the end time of the event for the given region.
+func (e *Event) GetEndTime(region Region) time.Time {
 	return e.EndAt[indexHelper(region.String())].Time
 }
 
-// GetEventPublicStartTime returns the public start time of the event for the given region.
-func (e *Event) GetEventPublicStartTime(region Region) time.Time {
+// GetPublicStartTime returns the public start time of the event for the given region.
+func (e *Event) GetPublicStartTime(region Region) time.Time {
 	return e.PublicStartAt[indexHelper(region.String())].Time
 }
 
-func (e *Event) GetEventPublicEndTime(region Region) time.Time {
+// GetPublicEndTime returns the public end time of the event for the given region.
+func (e *Event) GetPublicEndTime(region Region) time.Time {
 	return e.PublicEndAt[indexHelper(region.String())].Time
 }
 
-// GetEventBannerURL returns the URL of the event banner for the given region.
-func (e *Event) GetEventBannerURL(region Region) string {
+// GetBannerURL returns the URL of the event banner for the given region.
+func (e *Event) GetBannerURL(region Region) string {
 	return "https://bestdori.com/assets/" + region.String() + "/events/" + e.AssetBundleName + "/images_rip/banner.png"
 }
 
-// GetEventBannerFile retrieves the event banner image file for the given region.
-func (e *Event) GetEventBannerFile(ctx context.Context, region Region) ([]byte, error) {
-	return getBannerFile(ctx, e.api, e.GetEventBannerURL(region))
+// GetBannerFile retrieves the event banner image file for the given region.
+func (e *Event) GetBannerFile(ctx context.Context, region Region) ([]byte, error) {
+	return getBannerFile(ctx, e.api, e.GetBannerURL(region))
 }
 
-// GetEventType returns the type of the event.
-func (e *Event) GetEventType(region Region) string {
+// GetType returns the type of the event.
+func (e *Event) GetType(region Region) string {
 	return e.EventType
 }
 
-// GetEventAttribute returns the attribute and its bonus percentage for the event.
-func (e *Event) GetEventAttribute() (string, int) {
+// GetAttribute returns the attribute and its bonus percentage for the event.
+func (e *Event) GetAttribute() (string, int) {
 	return e.Attributes[0].Attribute, e.Attributes[0].Percent
 }
 
@@ -540,8 +541,8 @@ func (r *Rates) GetPredictCutoff(ctx context.Context, event Event) (EventTracker
 	var avgPercent, sumPercent float64
 	var avgEp, sumEp int
 	region := regionHelper(r.Server)
-	timeStart := event.GetEventStartTime(region).UnixMilli()
-	timeEnd := event.GetEventEndTime(region).UnixMilli()
+	timeStart := event.GetStartTime(region).UnixMilli()
+	timeEnd := event.GetEndTime(region).UnixMilli()
 	if tracker.Cutoffs[len(tracker.Cutoffs)-1].Time < timeStart+86400000 {
 		return EventTracker{}, EventPredictedTracker{}, ErrTooLessDataPoints
 	}
