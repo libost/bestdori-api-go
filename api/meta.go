@@ -58,10 +58,6 @@ func (m SongMetaFactors) Efficiency(fever bool, skillBoost, accuracy, length flo
 	return eff
 }
 
-func InitSongMeta(ctx context.Context) (*SongMeta, error) {
-	return defaultApi.InitSongMeta(ctx)
-}
-
 func (a *Api) InitSongMeta(ctx context.Context) (*SongMeta, error) {
 	resp, err := a.do(ctx, http.MethodGet, songsMetaURL)
 	if err != nil {

@@ -36,20 +36,3 @@ func regionHelper(idx int) Region {
 		return ""
 	}
 }
-
-func tzHelper(idx int) string {
-	switch idx {
-	case 0:
-		return "Asia/Tokyo"
-	case 1:
-		return "America/Los_Angeles"
-	case 2:
-		return "Asia/Taipei"
-	case 3:
-		return "Asia/Shanghai"
-	case 4:
-		return "Asia/Seoul"
-	default:
-		return ""
-	}
-}

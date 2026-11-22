@@ -58,3 +58,8 @@ func main() {
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgements
+
+This project contains an algorithm ported from [Tsugu BangDream Bot](https://github.com/Yamamoto-2/tsugu-bangdream-bot).
+See the [NOTICE](NOTICE) file for details.

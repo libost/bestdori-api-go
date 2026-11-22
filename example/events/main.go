@@ -20,7 +20,8 @@ func main() {
 		println("Event is not available in CN region")
 		return
 	}
-	fmt.Println(events.GetEventTitle(api.RegionCN))
+	fmt.Println(events.GetTitle(api.RegionCN))
+	fmt.Println(events.GetStartTime(api.RegionCN).Format("2006-01-02 15:04:05 MST"))
 	cards := events.GetEventCards()
 	type CardDetails struct {
 		CardName      string
@@ -68,10 +69,10 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	_, predictTracker, err := rates.GetPredictCutoff(context.TODO(), *events)
+	eventTracker, predictTracker, err := rates.GetPredictCutoff(context.TODO(), *events)
 	if err != nil {
 		panic(err)
 	}
-	//fmt.Println(eventTracker)
+	fmt.Println(eventTracker)
 	fmt.Println(predictTracker)
 }

@@ -482,3 +482,39 @@ func randomNumGen(min, max int) (int, error) {
 	}
 	return rand.N(max-min+1) + min, nil
 }
+
+// GetMethod retrieves the payment method of the GachaPaymentMethods.
+//
+// It can be used to determine the type of payment method used for the gacha draw.
+func (p *GachaPaymentMethods) GetMethod() string {
+	return p.PaymentMethod
+}
+
+// GetCost retrieves the cost of the GachaPaymentMethods.
+//
+// Be aware that the cost returned is the average cost per draw, use GetTotalCost to get the total cost.
+func (p *GachaPaymentMethods) GetCost() int {
+	return p.Quantity
+}
+
+// GetCount retrieves the count of draws for the GachaPaymentMethods.
+//
+// It can be used to determine how many draws are performed with the specified payment method.
+func (p *GachaPaymentMethods) GetDraws() int {
+	return p.Count
+}
+
+// GetDiscountType retrieves the guaranteed type of the GachaPaymentMethods.
+func (p *GachaPaymentMethods) GetBehavior() string {
+	return p.Behavior
+}
+
+// IsPickup checks if the GachaPaymentMethods is a pickup gacha. It returns true if the gacha is a pickup gacha, and false otherwise.
+func (p *GachaPaymentMethods) IsPickup() bool {
+	return p.Pickup
+}
+
+// GetTotalCost retrieves the total cost of the GachaPaymentMethods.
+func (p *GachaPaymentMethods) GetTotalCost() int {
+	return p.CostItemQuantity
+}

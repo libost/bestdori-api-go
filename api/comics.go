@@ -102,6 +102,8 @@ func (c *Comics) GetComicURL(region Region) string {
 
 // GetComicFile retrieves the comic image file for the given region.
 //
+// The format of the comic image is PNG.
+//
 // It fetches the comic image from the URL returned by GetComicURL and returns the image data as a byte slice. If any error occurs during the API request or reading the response body, it returns an error.
 func (c *Comics) GetComicFile(ctx context.Context, region Region) ([]byte, error) {
 	url := c.GetComicURL(region)

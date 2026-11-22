@@ -99,6 +99,17 @@ func (d Difficulty) Idx() int {
 	return indexHelper(d.String())
 }
 
+type CardStatus string
+
+const (
+	CardStatusNormal        CardStatus = "normal"
+	CardStatusAfterTraining CardStatus = "after_training"
+)
+
+func (cs CardStatus) String() string {
+	return string(cs)
+}
+
 // Tiers returns the supported ranking tiers for a region.
 func (r Region) Tiers() []int {
 	switch r {
@@ -309,4 +320,91 @@ func isValidPNG(ctx context.Context, api *Api, url string) bool {
 		return false
 	}
 	return true
+}
+
+const (
+	card1PowerfulFrame = "https://bestdori.com/res/image/card-1-powerful.png"
+	card1CoolFrame     = "https://bestdori.com/res/image/card-1-cool.png"
+	card1HappyFrame    = "https://bestdori.com/res/image/card-1-happy.png"
+	card1PureFrame     = "https://bestdori.com/res/image/card-1-pure.png"
+	card2Frame         = "https://bestdori.com/res/image/card-2.png"
+	card3Frame         = "https://bestdori.com/res/image/card-3.png"
+	card4Frame         = "https://bestdori.com/res/image/card-4.png"
+	card5Frame         = "https://bestdori.com/res/image/card-5.png"
+)
+
+var cardFrame1 = []string{
+	card1PowerfulFrame,
+	card1CoolFrame,
+	card1HappyFrame,
+	card1PureFrame,
+}
+
+var cardFrame = []string{
+	card2Frame,
+	card3Frame,
+	card4Frame,
+	card5Frame,
+}
+
+var bandFrames = [...]string{
+	"https://bestdori.com/res/icon/band_1.svg",
+	"https://bestdori.com/res/icon/band_2.svg",
+	"https://bestdori.com/res/icon/band_3.svg",
+	"https://bestdori.com/res/icon/band_4.svg",
+	"https://bestdori.com/res/icon/band_5.svg", // 250*250
+	"",
+	"",
+	"",
+	"",
+	"",
+	"",
+	"",
+	"",
+	"",
+	"",
+	"",
+	"",
+	"https://bestdori.com/res/icon/band_18.svg", // 18 44*44
+	"",
+	"",
+	"https://bestdori.com/res/icon/band_21.svg", // 21 44*44
+	"",
+	"",
+	"",
+	"",
+	"",
+	"",
+	"",
+	"",
+	"",
+	"",
+	"",
+	"",
+	"",
+	"",
+	"",
+	"",
+	"",
+	"",
+	"",
+	"",
+	"",
+	"",
+	"",
+	"https://bestdori.com/res/icon/band_45.svg", // 45
+}
+
+const (
+	powerfulFrame = "https://bestdori.com/res/icon/powerful.svg"
+	coolFrame     = "https://bestdori.com/res/icon/cool.svg"
+	happyFrame    = "https://bestdori.com/res/icon/happy.svg"
+	pureFrame     = "https://bestdori.com/res/icon/pure.svg"
+)
+
+var attributeFrames = [...]string{
+	powerfulFrame,
+	coolFrame,
+	happyFrame,
+	pureFrame,
 }

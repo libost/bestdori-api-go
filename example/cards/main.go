@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"os"
 	"time"
 
 	bestdoriapi "github.com/libost/bestdori-api-go"
@@ -44,4 +45,22 @@ func main() {
 		return
 	}
 	fmt.Println(skill.GetDescriptionFull(api.RegionCN, 5))
+	thumbnail1, err := card.GetThumbnailFile(context.TODO(), api.RegionCN, api.CardStatusNormal)
+	if err != nil {
+		panic(err)
+	}
+	thumbnail2, err := card.GetThumbnailFile(context.TODO(), api.RegionCN, api.CardStatusAfterTraining)
+	if err != nil {
+		panic(err)
+	}
+	os.Mkdir("./example_output", 0755)
+	err = os.WriteFile("./example_output/thumbnail1.png", thumbnail1, 0644)
+	if err != nil {
+		panic(err)
+	}
+	err = os.WriteFile("./example_output/thumbnail2.png", thumbnail2, 0644)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("Thumbnails saved to ./example_output/thumbnail1.png and ./example_output/thumbnail2.png")
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json/v2"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"strconv"
@@ -12,12 +13,14 @@ import (
 )
 
 var (
-	ErrCardNotFound   = errors.New("card not found")
-	ErrNotValidCardId = errors.New("not a valid card id")
+	ErrCardNotFound      = errors.New("card not found")
+	ErrNotValidCardId    = errors.New("not a valid card id")
+	ErrThumbnailNotFound = errors.New("thumbnail not found")
 )
 
 type Cards struct {
 	api             *Api
+	id              string
 	CharacterID     int         `json:"characterId"`
 	Rarity          int         `json:"rarity"`
 	Attribute       string      `json:"attribute"`
@@ -45,6 +48,7 @@ type CardsMap map[string]Cards
 
 type Card struct {
 	api             *Api
+	id              string
 	CharacterID     int    `json:"characterId"`
 	Rarity          int    `json:"rarity"`
 	Attribute       string `json:"attribute"`
@@ -105,6 +109,7 @@ func (a *Api) InitCards(ctx context.Context) (*CardsMap, error) {
 	}
 	for cardID, card := range cardsMap {
 		card.api = a
+		card.id = cardID
 		cardsMap[cardID] = card
 	}
 	return &cardsMap, nil
@@ -148,6 +153,7 @@ func getCard(ctx context.Context, api *Api, cardId string) (*Card, error) {
 		return nil, err
 	}
 	card.api = api
+	card.id = cardId
 	return &card, nil
 }
 
@@ -232,94 +238,63 @@ func (c *Card) GetType() string {
 	return c.Type
 }
 
-// GetArtsURL returns the URLs of the card arts for the specified region.
+// GetArtsURL returns the URLs of the card arts for the specified region and status.
 //
-// It returns two URLs: the first one is for the normal card art, and the second one is for the after training card art.
-//
-// If any of the URLs is not available, it will return an empty string for that URL.
-func (c *Card) GetArtsURL(ctx context.Context, region Region) (string, string) {
-	stats := []string{"normal", "after_training"}
-	result := make([]string, 0, len(stats))
-	for _, cardStat := range stats {
-		url := "https://bestdori.com/assets/" + region.String() + "/characters/resourceset/" + c.ResourceSetName + "_rip/card_" + cardStat + ".png"
-		if isValidPNG(ctx, c.api, url) {
-			result = append(result, url)
-		}
+// If the card art is not available, it will return an empty string.
+func (c *Card) GetArtsURL(ctx context.Context, region Region, status CardStatus) string {
+	url := "https://bestdori.com/assets/" + region.String() + "/characters/resourceset/" + c.ResourceSetName + "_rip/card_" + status.String() + ".png"
+	if !isValidPNG(ctx, c.api, url) {
+		return ""
 	}
-	return result[0], result[1]
+	return url
 }
 
-// GetArtsURL returns the URLs of the card arts for the specified region.
+// GetArtsURL returns the URLs of the card arts for the specified region and status.
 //
-// It returns two URLs: the first one is for the normal card art, and the second one is for the after training card art.
-//
-// If any of the URLs is not available, it will return an empty string for that URL.
-func (c *Cards) GetArtsURL(ctx context.Context, region Region) (string, string) {
-	stats := []string{"normal", "after_training"}
-	result := make([]string, 0, len(stats))
-	for _, cardStat := range stats {
-		url := "https://bestdori.com/assets/" + region.String() + "/characters/resourceset/" + c.ResourceSetName + "_rip/card_" + cardStat + ".png"
-		if isValidPNG(ctx, c.api, url) {
-			result = append(result, url)
-		}
+// If the card art is not available, it will return an empty string.
+func (c *Cards) GetArtsURL(ctx context.Context, region Region, status CardStatus) string {
+	url := "https://bestdori.com/assets/" + region.String() + "/characters/resourceset/" + c.ResourceSetName + "_rip/card_" + status.String() + ".png"
+	if !isValidPNG(ctx, c.api, url) {
+		return ""
 	}
-	return result[0], result[1]
+	return url
 }
 
-// GetArtsFile returns the card arts as byte slices for the specified region.
+// GetArtsFile returns the card arts as byte slices for the specified region and status.
 //
-// It returns two byte slices: the first one is for the normal card art, and the second one is for the after training card art.
-//
-// If any of the arts is not available, it will return nil for that art.
-func (c *Card) GetArtsFile(ctx context.Context, region Region) ([]byte, []byte, error) {
-	url1, url2 := c.GetArtsURL(ctx, region)
-	urls := []string{url1, url2}
-	arts := make([][]byte, 0, 2)
-	for i, url := range urls {
-		if url == "" {
-			arts[i] = nil
-			continue
-		}
-		resp, err := c.api.do(ctx, http.MethodGet, url)
-		if err != nil {
-			return nil, nil, err
-		}
-		data, err := io.ReadAll(resp.Body)
-		resp.Body.Close()
-		if err != nil {
-			return nil, nil, err
-		}
-		arts[i] = data
+// If the card art is not available, it will return nil.
+func (c *Card) GetArtsFile(ctx context.Context, region Region, status CardStatus) ([]byte, error) {
+	url := c.GetArtsURL(ctx, region, status)
+	resp, err := c.api.do(ctx, http.MethodGet, url)
+	if err != nil {
+		return nil, err
 	}
-	return arts[0], arts[1], nil
+	data, err := io.ReadAll(resp.Body)
+	resp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
 }
 
-// GetArtsFile returns the card arts as byte slices for the specified region.
+// GetArtsFile returns the card arts as byte slices for the specified region and status.
 //
-// It returns two byte slices: the first one is for the normal card art, and the second one is for the after training card art.
-//
-// If any of the arts is not available, it will return nil for that art.
-func (c *Cards) GetArtsFile(ctx context.Context, region Region) ([]byte, []byte, error) {
-	url1, url2 := c.GetArtsURL(ctx, region)
-	urls := []string{url1, url2}
-	arts := make([][]byte, 0, 2)
-	for i, url := range urls {
-		if url == "" {
-			arts[i] = nil
-			continue
-		}
-		resp, err := c.api.do(ctx, http.MethodGet, url)
-		if err != nil {
-			return nil, nil, err
-		}
-		data, err := io.ReadAll(resp.Body)
-		resp.Body.Close()
-		if err != nil {
-			return nil, nil, err
-		}
-		arts[i] = data
+// If the card art is not available, it will return nil.
+func (c *Cards) GetArtsFile(ctx context.Context, region Region, status CardStatus) ([]byte, error) {
+	url := c.GetArtsURL(ctx, region, status)
+	if url == "" {
+		return nil, nil
 	}
-	return arts[0], arts[1], nil
+	resp, err := c.api.do(ctx, http.MethodGet, url)
+	if err != nil {
+		return nil, err
+	}
+	data, err := io.ReadAll(resp.Body)
+	resp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
 }
 
 // GetReleaseTime returns the release time of the card for the given region.
@@ -340,4 +315,168 @@ func (c *Card) GetGachaText(region Region) string {
 // GetCard returns the card for the given NewCards. It returns an error if the card is not found or if the API call fails.
 func (n *NewCards) GetCard(ctx context.Context) (*Card, error) {
 	return getCard(ctx, n.a, strconv.Itoa(n.id))
+}
+
+// GetThumbnailURL returns the URL of the card thumbnail for the given region and status. It returns an empty string if the thumbnail is not available.
+func (c *Card) GetThumbnailURL(ctx context.Context, region Region, status CardStatus) string {
+	id, _ := strconv.Atoi(c.id)
+	cardPack := fmt.Sprintf("%05d", id/50)
+	url := "https://bestdori.com/assets/" + region.String() + "/thumb/chara/card" + cardPack + "_rip/" + c.ResourceSetName + "_" + status.String() + ".png"
+	if !isValidPNG(ctx, c.api, url) {
+		return ""
+	}
+	return url
+}
+
+// GetThumbnailURL returns the URL of the card thumbnail for the given region and status. It returns an empty string if the thumbnail is not available.
+func (c *Cards) GetThumbnailURL(ctx context.Context, region Region, status CardStatus) string {
+	id, _ := strconv.Atoi(c.id)
+	cardPack := fmt.Sprintf("%05d", id/50)
+	url := "https://bestdori.com/assets/" + region.String() + "/thumb/chara/card" + cardPack + "_rip/" + c.ResourceSetName + "_" + status.String() + ".png"
+	if !isValidPNG(ctx, c.api, url) {
+		return ""
+	}
+	return url
+}
+
+// GetThumbnailFile retrieves the card thumbnail image file for the given region and status.
+//
+// The format of the card thumbnail image is PNG.
+//
+// If the card thumbnail is not available, an ErrThumbnailNotFound error is returned.
+func (c *Card) GetThumbnailFile(ctx context.Context, region Region, status CardStatus) ([]byte, error) {
+	url := c.GetThumbnailURL(ctx, region, status)
+	if url == "" {
+		return nil, ErrThumbnailNotFound
+	}
+	resp, err := c.api.do(ctx, http.MethodGet, url)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
+}
+
+// GetThumbnailFile retrieves the card thumbnail image file for the given region and status.
+//
+// The format of the card thumbnail image is PNG.
+//
+// If the card thumbnail is not available, an ErrThumbnailNotFound error is returned.
+func (c *Cards) GetThumbnailFile(ctx context.Context, region Region, status CardStatus) ([]byte, error) {
+	url := c.GetThumbnailURL(ctx, region, status)
+	if url == "" {
+		return nil, ErrThumbnailNotFound
+	}
+	resp, err := c.api.do(ctx, http.MethodGet, url)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
+}
+
+// GetThumbnailFrameURL returns the URL of the card thumbnail frame for the given card. It returns an empty string if the thumbnail frame is not available.
+func (c *Card) GetThumbnailFrameURL() string {
+	if c.Rarity == 1 {
+		return cardFrame1[indexHelper(c.Attribute)]
+	}
+	return cardFrame[c.Rarity-2]
+}
+
+// GetThumbnailFrameURL returns the URL of the card thumbnail frame for the given card. It returns an empty string if the thumbnail frame is not available.
+func (c *Cards) GetThumbnailFrameURL() string {
+	if c.Rarity == 1 {
+		return cardFrame1[indexHelper(c.Attribute)]
+	}
+	return cardFrame[c.Rarity-2]
+}
+
+// GetThumbnailFrameFile retrieves the card thumbnail frame image file for the given card.
+//
+// The format of the card thumbnail frame image is PNG.
+//
+// If the card thumbnail frame is not available, an ErrThumbnailNotFound error is returned.
+func (c *Card) GetThumbnailFrameFile(ctx context.Context) ([]byte, error) {
+	url := c.GetThumbnailFrameURL()
+	resp, err := c.api.do(ctx, http.MethodGet, url)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
+}
+
+// GetThumbnailFrameFile retrieves the card thumbnail frame image file for the given card.
+//
+// The format of the card thumbnail frame image is PNG.
+//
+// If the card thumbnail frame is not available, an ErrThumbnailNotFound error is returned.
+func (c *Cards) GetThumbnailFrameFile(ctx context.Context) ([]byte, error) {
+	url := c.GetThumbnailFrameURL()
+	resp, err := c.api.do(ctx, http.MethodGet, url)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
+}
+
+// GetAttributeIconURL returns the URL of the attribute icon for the given card.
+func (c *Card) GetAttributeIconURL() string {
+	return attributeFrames[indexHelper(c.Attribute)]
+}
+
+// GetAttributeIconURL returns the URL of the attribute icon for the given card.
+func (c *Cards) GetAttributeIconURL() string {
+	return attributeFrames[indexHelper(c.Attribute)]
+}
+
+// GetAttributeIconFile retrieves the attribute icon image file for the given card.
+//
+// The format of the attribute icon image is SVG.
+func (c *Card) GetAttributeIconFile(ctx context.Context) ([]byte, error) {
+	url := c.GetAttributeIconURL()
+	resp, err := c.api.do(ctx, http.MethodGet, url)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
+}
+
+// GetAttributeIconFile retrieves the attribute icon image file for the given card.
+//
+// The format of the attribute icon image is SVG.
+func (c *Cards) GetAttributeIconFile(ctx context.Context) ([]byte, error) {
+	url := c.GetAttributeIconURL()
+	resp, err := c.api.do(ctx, http.MethodGet, url)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
 }

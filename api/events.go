@@ -1,3 +1,8 @@
+// This file contains an algorithm ported from [Tsugu BangDream Bot](https://github.com/Yamamoto-2/tsugu-bangdream-bot).
+//
+// Original Copyright (c) 2023 Yamamoto-2
+// Licensed under the MIT License. See [NOTICE](./../NOTICE) for details.
+
 package api
 
 import (
@@ -258,6 +263,8 @@ func (e *Events) GetBannerURL(region Region) string {
 }
 
 // GetBannerFile retrieves the event banner image file for the given region.
+//
+// The format of the event banner image is PNG.
 func (e *Events) GetBannerFile(ctx context.Context, region Region) ([]byte, error) {
 	return getBannerFile(ctx, e.api, e.GetBannerURL(region))
 }
@@ -348,6 +355,8 @@ func (e *Event) GetBannerURL(region Region) string {
 }
 
 // GetBannerFile retrieves the event banner image file for the given region.
+//
+// The format of the event banner image is PNG.
 func (e *Event) GetBannerFile(ctx context.Context, region Region) ([]byte, error) {
 	return getBannerFile(ctx, e.api, e.GetBannerURL(region))
 }
@@ -523,7 +532,9 @@ type PredictCutoff struct {
 //
 // predicted tracker data will NOT contain the data points that are within 1 day of the event start time, as they are considered too close to the start time to make accurate predictions.
 //
-// The prediction algorithm is the same as the one used in Tsugu, another BanG Dream! Bot.
+// predicted tracker data will contain a data point at when the event ends, with the latest predicted ep value at that time.
+//
+// The prediction algorithm is a port of the one used in Tsugu, another BanG Dream! Bot.
 //
 // Be aware that this function refuse to predict if the latest data point is less than 1 day from the event start time, as it may lead to inaccurate predictions. If this happens, the function will return an ErrTooLessDataPoints error.
 func (r *Rates) GetPredictCutoff(ctx context.Context, event Event) (EventTracker, EventPredictedTracker, error) {
