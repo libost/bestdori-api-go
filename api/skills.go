@@ -20,17 +20,19 @@ type Skills struct {
 			Judge SkillActivationEffectTypesValue `json:"judge"`
 		}
 	} `json:"activationEffect"`
-	OnceEffect struct {
-		OnceEffectType      string `json:"onceEffectType"`
-		OnceEffectValueType string `json:"onceEffectValueType"`
-		OnceEffectValue     []int  `json:"onceEffectValue"`
-	} `json:"onceEffect"`
+	OnceEffect OnceEffect `json:"onceEffect"`
 }
 
 type SkillActivationEffectTypesValue struct {
 	ActivateEffectValue     []int  `json:"activateEffectValue"`
 	ActivateEffectValueType string `json:"activateEffectValueType"`
 	ActivateCondition       string `json:"activateCondition"`
+}
+
+type OnceEffect struct {
+	OnceEffectType      string `json:"onceEffectType"`
+	OnceEffectValueType string `json:"onceEffectValueType"`
+	OnceEffectValue     []int  `json:"onceEffectValue"`
 }
 
 type SkillsMap map[string]Skills
@@ -67,7 +69,7 @@ func getSkill(ctx context.Context, api *Api, skillId string) (*Skills, error) {
 //
 // It is recommended to use this method before calling GetDescription or GetSimpleDescription to ensure that the skill is available in the desired region.
 func (s *Skills) IsAvailable(region Region) bool {
-	return s.GetDescription(region) == ""
+	return s.GetDescription(region) != ""
 }
 
 // GetDescription returns the description of the skill for the given region. If the skill is not available in the specified region, it returns an empty string.
@@ -94,6 +96,19 @@ func (s *Skills) GetDescriptionFull(region Region, level int) string {
 	desc := s.GetDescription(region)
 	durations := s.GetDuration()
 	duration := strings.TrimSuffix(fmt.Sprintf("%.1f", durations[level-1]), ".0")
-	desc = strings.ReplaceAll(desc, "{0}", duration)
+	onceEffect := s.GetOnceEffect()
+	if onceEffect.OnceEffectValue != nil && len(onceEffect.OnceEffectValue) >= level {
+		desc = strings.ReplaceAll(desc, "{0}", strconv.Itoa(onceEffect.OnceEffectValue[level-1]))
+		desc = strings.ReplaceAll(desc, "{1}", duration)
+	} else {
+		desc = strings.ReplaceAll(desc, "{0}", duration)
+	}
 	return desc
+}
+
+// GetOnceEffect returns the OnceEffect struct for the skill, which contains information about the one-time effect of the skill, including its type, value type, and values.
+//
+// Be aware that the OnceEffect may not be applicable to all skills, and its values may vary depending on the skill's configuration.
+func (s *Skills) GetOnceEffect() OnceEffect {
+	return s.OnceEffect
 }
