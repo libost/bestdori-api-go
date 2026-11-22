@@ -20,7 +20,6 @@ func main() {
 		fmt.Println("Card is not available in CN region")
 		return
 	}
-	fmt.Println("Card is available in CN region")
 	fmt.Println(card.GetCardName(api.RegionCN))
 	char, err := card.GetCharacter(context.TODO())
 	if err != nil {
@@ -36,4 +35,13 @@ func main() {
 		panic(err)
 	}
 	fmt.Println(bandName)
+	skill, err := card.GetSkill(context.TODO())
+	if err != nil {
+		panic(err)
+	}
+	if !skill.IsAvailable(api.RegionCN) {
+		fmt.Println("Skill is not available in CN region")
+		return
+	}
+	fmt.Println(skill.GetDescriptionFull(api.RegionCN, 5))
 }
