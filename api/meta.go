@@ -86,7 +86,7 @@ func (m *SongMeta) GetSongMetaFactors(songId, skillLength string, difficulty Dif
 	if _, ok := (*m)[songId]; !ok {
 		return nil, ErrSongNotFound
 	}
-	diffint := fmt.Sprintf("%c", difficulty.Idx())
+	diffint := fmt.Sprintf("%d", difficulty.Idx())
 	if _, ok := (*m)[songId][diffint]; !ok {
 		return nil, ErrDifficultyNotFound
 	}
