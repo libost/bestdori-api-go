@@ -28,7 +28,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	m, err := songMeta.GetSongMetaFactors("306", "7", api.DiffcultyExpert)
+	m, err := songMeta.GetSongMetaFactors("306", "7", api.DifficultyExpert)
 	if err != nil {
 		panic(err)
 	}

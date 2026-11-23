@@ -148,6 +148,17 @@ func (r *Recent) GetRecentEventsForRegion(region Region) []RecentEvents {
 			}
 		}
 	}
+	if len(results) > 1 {
+		maxVal := 0
+		maxIdx := 0
+		for r, event := range results {
+			if event.StartAt[region.Idx()].Time.Unix() > int64(maxVal) {
+				maxVal = int(event.StartAt[region.Idx()].Time.Unix())
+				maxIdx = r
+			}
+		}
+		results = []RecentEvents{results[maxIdx]}
+	}
 	return results
 }
 
