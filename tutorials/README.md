@@ -2,6 +2,8 @@
 
 This directory contains tutorials for using the Bestdori API.
 
+[简体中文](README_zh.md)
+
 ## Index
 - [Getting Started](getting_started.md)
 - [Fetching Card Data](fetching_card_data.md)

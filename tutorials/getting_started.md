@@ -6,7 +6,7 @@ This is a simple guide to get you started with the Bestdori API.
 
 ## Installation
 ```go
-go get github.com/yourusername/bestdori-api-go
+go get github.com/libost/bestdori-api-go
 ```
 
 ## Setting Up the Client

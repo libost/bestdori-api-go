@@ -6,6 +6,8 @@
 
 A Go library for interacting with the Bestdori API.
 
+[简体中文](README_zh.md)
+
 >[!IMPORTANT]
 > This is a work in progress and not yet ready for production use.
 
