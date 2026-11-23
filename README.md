@@ -1,6 +1,8 @@
 # Bestdori API for Go
 [![Go Reference](https://pkg.go.dev/badge/github.com/libost/bestdori-api-go.svg)](https://pkg.go.dev/github.com/libost/bestdori-api-go)
 [![Go Version](https://img.shields.io/badge/Go-1.27-blue.svg)](go.mod)
+![GitHub Tag](https://img.shields.io/github/v/tag/libost/bestdori-api-go)
+
 
 A Go library for interacting with the Bestdori API.
 

@@ -1,0 +1,27 @@
+version: 2.20
+
+release:
+  prerelease: auto
+  target_commitish: "{{ .Commit }}"
+
+changelog:
+  sort: asc
+  use: github
+  abbrev: 7
+  format: "{{ .SHA }}: {{ .Message }}{{ if .Logins }} ({{ .Logins | englishJoin }}){{ end }}"
+  groups:
+    - title: Features
+      regexp: '^.*?feat(\([[:word:]]+\))??!?:.+$'
+      order: 0
+    - title: Fixes
+      regexp: '^.*?fix(\([[:word:]]+\))??!?:.+$'
+      order: 1
+    - title: Maintenance
+      regexp: '^.*?(chore|docs|style|refactor|perf|test)(\([[:word:]]+\))??!?:.+$'
+      order: 2
+    - title: Others
+      order: 999
+  filters:
+    exclude:
+      - '^Merge pull request #\d+ from .+$'
+      - '^Merge branch .+$'
