@@ -279,7 +279,7 @@ type Api struct {
 }
 
 func NewApi(proxy string, timeout time.Duration) *Api {
-	if timeout <= 0 {
+	if timeout <= 1*time.Second {
 		timeout = 10 * time.Second
 	}
 

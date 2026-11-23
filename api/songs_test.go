@@ -84,6 +84,9 @@ func TestGetSongById(t *testing.T) {
 	if sos.GetType() != "anime" {
 		t.Fatalf("Expected song type 'anime', got '%s'", sos.GetType())
 	}
+	if chart, err := sos.GetChart(context.Background(), DifficultyExpert); err != nil || chart == nil {
+		t.Fatalf("Expected chart for song, got chart: %v, error: %v", chart, err)
+	}
 	m1, err := sos.GetSongMetaFactors(context.Background(), DifficultyExpert, "7")
 	if err != nil {
 		t.Fatalf("Failed to get song meta factors: %v", err)
@@ -231,6 +234,9 @@ func TestGetSongById(t *testing.T) {
 	}
 	if sosd.GetComposer(RegionCN) != "MY FIRST STORY" {
 		t.Fatalf("Expected composer 'MY FIRST STORY', got '%s'", sosd.GetComposer(RegionCN))
+	}
+	if chart, err := sosd.GetChart(context.Background(), DifficultyExpert); err != nil || chart == nil {
+		t.Fatalf("Expected chart for song details, got chart: %v, error: %v", chart, err)
 	}
 	sia, err := client.GetSong(context.Background(), "245")
 	if err != nil {

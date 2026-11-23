@@ -513,3 +513,70 @@ func (s *Song) GetDescription(region Region) string {
 	}
 	return s.Description[region.Idx()]
 }
+
+func (s *Song) GetBPM() int {
+	for _, bpm := range s.Bpm {
+		if bpm[0].Bpm != 0 {
+			return bpm[0].Bpm
+		}
+	}
+	return 0
+}
+
+type SongChart []SongChartSingle
+
+type SongChartSingle struct {
+	// Type can be "BPM"(gives the BPM), "System"(gives the Data, which is the song's file), "Long"(gives the Connections, which is the long note's connections), "Single"(gives nothing), "Slide"(gives the Connections, which is the slide note's connections)
+	Type string `json:"type"`
+	// Bpm is the song's BPM, only present if Type is "BPM"
+	Bpm int `json:"bpm"`
+	// Data is the song's file or fever sound effect, only present if Type is "System"
+	Data string `json:"data"`
+	// Lane is the lane of the note, only present if Type is "Single"
+	Lane int `json:"lane"`
+	// Connections is how the long note or slide note is connected, only present if Type is "Long" or "Slide"
+	Connections []SongChartConnection `json:"connections"`
+	// Beat is the beat of the note, only present if Type is "Single"
+	Beat float64 `json:"beat"`
+	// Flick is whether the note is a flick note, only present if Type is "Single"
+	Flick bool `json:"flick"`
+	// Skill is whether the note is a skill note, only present if Type is "Single"
+	Skill bool `json:"skill"`
+}
+
+type SongChartConnection struct {
+	// Lane is the lane of the note
+	Lane int `json:"lane"`
+	// Beat is the beat of the note
+	Beat float64 `json:"beat"`
+	// Flick is whether the note is a flick note, it is only present if true, and is omitted if false
+	Flick bool `json:"flick"`
+}
+
+// GetChart retrieves the chart data for the song at the specified difficulty level. It returns a SongChart, which is a slice of SongChartSingle, and an error if any occurs during the API request or JSON unmarshalling.
+//
+// Always check if the song has special difficulty before calling this function with DifficultySpecial, as it may not be available for all songs.
+func (s *Song) GetChart(ctx context.Context, difficulty Difficulty) (SongChart, error) {
+	return getChart(ctx, s.api, s.id, difficulty)
+}
+
+// GetChart retrieves the chart data for the songs at the specified difficulty level. It returns a SongChart, which is a slice of SongChartSingle, and an error if any occurs during the API request or JSON unmarshalling.
+//
+// Always check if the songs have special difficulty before calling this function with DifficultySpecial, as it may not be available for all songs.
+func (s *Songs) GetChart(ctx context.Context, difficulty Difficulty) (SongChart, error) {
+	return getChart(ctx, s.api, s.id, difficulty)
+}
+
+func getChart(ctx context.Context, api *Api, songId string, difficulty Difficulty) (SongChart, error) {
+	url := fmt.Sprintf("https://bestdori.com/api/charts/%s/%s.json", songId, difficulty.String())
+	resp, err := api.do(ctx, http.MethodGet, url)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	var chart SongChart
+	if err = json.UnmarshalRead(resp.Body, &chart); err != nil {
+		return nil, err
+	}
+	return chart, nil
+}

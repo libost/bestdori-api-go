@@ -490,3 +490,8 @@ func (c *Cards) GetAttributeIconFile(ctx context.Context) ([]byte, error) {
 	defer resp.Body.Close()
 	return io.ReadAll(resp.Body)
 }
+
+// GetCard returns a pointer to a Card struct for the given cardId. It returns an error if the cardId is not valid.
+func (c *Cards) GetCard(ctx context.Context) (*Card, error) {
+	return getCard(ctx, c.api, c.id)
+}

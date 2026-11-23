@@ -57,6 +57,10 @@ func main() {
 - Zero dependencies, only the standard library is used.
 - Easy to use and well-documented.
 
+## Tutorials
+
+Have no idea where to start? Check out the [tutorials](tutorials) directory for step-by-step guides on how to use the Bestdori API.
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
