@@ -126,6 +126,9 @@ func TestGetEventById(t *testing.T) {
 	if cutoff, predict, err := rateDetail.GetPredictCutoff(context.Background(), *eventDetail); err != nil || len(cutoff.Cutoffs) == 0 || len(predict.PredictCutoff) == 0 {
 		t.Fatalf("Expected no error, and non-nil cutoff and predict for event detail, got error: %v, cutoff: %v, predict: %v", err, cutoff, predict)
 	}
+	if cutoffS, predictS, err := rateDetail.GetPredictCutoffWithSummary(context.Background(), *event); err != nil || len(cutoffS.Cutoffs) == 0 || len(predictS.PredictCutoff) == 0 {
+		t.Fatalf("Expected no error, and non-nil cutoff and predict for event detail with summary, got error: %v, cutoff: %v, predict: %v", err, cutoffS, predictS)
+	}
 	if eventDetail.GetBannerURL(RegionCN) != "https://bestdori.com/assets/cn/event/sayohina_cross/images_rip/banner.png" {
 		t.Fatalf("Expected event detail banner URL to be 'https://bestdori.com/assets/cn/event/sayohina_cross/images_rip/banner.png', got '%s'", eventDetail.GetBannerURL(RegionCN))
 	}

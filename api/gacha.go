@@ -263,6 +263,8 @@ func (g *Gacha) GetType() string {
 // GetBannerURL retrieves the banner URL of the Gachas in the specified region. It returns an empty string if the Gachas is not available in that region.
 //
 // If the banner URL is not valid, it will attempt to use a fallback URL. If both URLs are invalid, it will return an empty string.
+//
+// Be aware that for some gacha, the banner URL for certain regions may not be valid, even if the gacha is available in that region. In such cases, the function will return an empty string.
 func (g *Gachas) GetBannerURL(ctx context.Context, region Region) string {
 	return getBannerURL(ctx, g.api, region, g.BannerAssetBundleName, g.ResourceName)
 }
@@ -270,6 +272,8 @@ func (g *Gachas) GetBannerURL(ctx context.Context, region Region) string {
 // GetBannerURL retrieves the banner URL of the Gacha in the specified region. It returns an empty string if the Gacha is not available in that region.
 //
 // If the banner URL is not valid, it will attempt to use a fallback URL. If both URLs are invalid, it will return an empty string.
+//
+// Be aware that for some gacha, the banner URL for certain regions may not be valid, even if the gacha is available in that region. In such cases, the function will return an empty string.
 func (g *Gacha) GetBannerURL(ctx context.Context, region Region) string {
 	return getBannerURL(ctx, g.api, region, g.BannerAssetBundleName, g.ResourceName)
 }
@@ -288,6 +292,8 @@ func getBannerURL(ctx context.Context, api *Api, region Region, bannerAssetBundl
 // GetBannerFile retrieves the banner file of the Gachas in the specified region. It returns an error if the banner file cannot be fetched or if the banner URL is not valid.
 //
 // If no valid banner URL is found for the specified region, it will return an error indicating that the banner URL is not available.
+//
+// Be aware that for some gacha, the banner file for certain regions may not be valid, even if the gacha is available in that region. In such cases, the function will return an error.
 func (g *Gachas) GetBannerFile(ctx context.Context, region Region) ([]byte, error) {
 	url := g.GetBannerURL(ctx, region)
 	if url == "" {
@@ -299,6 +305,8 @@ func (g *Gachas) GetBannerFile(ctx context.Context, region Region) ([]byte, erro
 // GetBannerFile retrieves the banner file of the Gacha in the specified region. It returns an error if the banner file cannot be fetched or if the banner URL is not valid.
 //
 // If no valid banner URL is found for the specified region, it will return an error indicating that the banner URL is not available.
+//
+// Be aware that for some gacha, the banner file for certain regions may not be valid, even if the gacha is available in that region. In such cases, the function will return an error.
 func (g *Gacha) GetBannerFile(ctx context.Context, region Region) ([]byte, error) {
 	url := g.GetBannerURL(ctx, region)
 	if url == "" {

@@ -26,6 +26,7 @@ var (
 
 type Events struct {
 	api                   *Api
+	id                    string
 	etag                  string
 	EventType             string             `json:"eventType"`
 	EventName             []string           `json:"eventName"`
@@ -184,6 +185,7 @@ func (a *Api) InitEvents(ctx context.Context) (*EventsMap, error) {
 	}
 	for eventID, events := range eventsMap {
 		events.api = a
+		events.id = eventID
 		events.etag = resp.Header.Get("ETag")
 		eventsMap[eventID] = events
 	}
@@ -221,6 +223,7 @@ func (e *EventsMap) UpdateEvents(ctx context.Context) error {
 	}
 	for eventID, events := range eventsMap {
 		events.api = api
+		events.id = eventID
 		events.etag = resp.Header.Get("ETag")
 		eventsMap[eventID] = events
 	}
@@ -581,8 +584,20 @@ type PredictCutoff struct {
 //
 // Be aware that this function refuse to predict if the latest data point is less than 1 day from the event start time, as it may lead to inaccurate predictions. If this happens, the function will return an ErrTooLessDataPoints error.
 func (r *Rates) GetPredictCutoff(ctx context.Context, event Event) (EventTracker, EventPredictedTracker, error) {
+	region := regionHelper(r.Server)
 	url := fmt.Sprintf("https://bestdori.com/api/tracker/data?server=%d&event=%s&tier=%d", r.Server, event.id, r.Tier)
-	resp, err := r.api.do(ctx, http.MethodGet, url)
+	return getPredictCutoff(ctx, r.api, r.Rate, url, event.GetStartTime(region).UnixMilli(), event.GetEndTime(region).UnixMilli())
+}
+
+// GetPredictCutoffWithSummary is the same as GetPredictCutoff, but it takes an Events struct instead of an Event struct.
+func (r *Rates) GetPredictCutoffWithSummary(ctx context.Context, events Events) (EventTracker, EventPredictedTracker, error) {
+	region := regionHelper(r.Server)
+	url := fmt.Sprintf("https://bestdori.com/api/tracker/data?server=%d&event=%s&tier=%d", r.Server, events.id, r.Tier)
+	return getPredictCutoff(ctx, r.api, r.Rate, url, events.GetStartTime(region).UnixMilli(), events.GetEndTime(region).UnixMilli())
+}
+
+func getPredictCutoff(ctx context.Context, api *Api, rate float64, url string, timeStart, timeEnd int64) (EventTracker, EventPredictedTracker, error) {
+	resp, err := api.do(ctx, http.MethodGet, url)
 	if err != nil {
 		return EventTracker{}, EventPredictedTracker{}, err
 	}
@@ -594,9 +609,6 @@ func (r *Rates) GetPredictCutoff(ctx context.Context, event Event) (EventTracker
 	predicted := make([]PredictCutoff, len(tracker.Cutoffs))
 	var avgPercent, sumPercent float64
 	var avgEp, sumEp int
-	region := regionHelper(r.Server)
-	timeStart := event.GetStartTime(region).UnixMilli()
-	timeEnd := event.GetEndTime(region).UnixMilli()
 	if tracker.Cutoffs[len(tracker.Cutoffs)-1].Time < timeStart+86400000 {
 		return EventTracker{}, EventPredictedTracker{}, ErrTooLessDataPoints
 	}
@@ -624,7 +636,7 @@ func (r *Rates) GetPredictCutoff(ctx context.Context, event Event) (EventTracker
 		}
 		b := z / w
 		a := float64(avgEp) - b*avgPercent
-		predictedEp := a + b*(float64(1)+r.Rate) // 预测的最终ep值
+		predictedEp := a + b*(float64(1)+rate) // 预测的最终ep值
 		predicted[i].Ep = int(predictedEp)
 	}
 	var lastEqualIndex int
