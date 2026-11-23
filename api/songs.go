@@ -184,13 +184,6 @@ func (r *RecentSongs) GetSong(ctx context.Context) (*Song, error) {
 	return r.api.GetSong(ctx, r.id)
 }
 
-// GetSongs retrieves the Songs struct for the RecentSongs struct. It returns an error if the song ID is not found in the SongsMap.
-//
-// Be aware that the Songs struct that is returned is a summary of the song data, and does not include all the details that can be found in the Song struct.
-func (r *RecentGachas) GetSongs(ctx context.Context) (*Songs, error) {
-	return getSongs(ctx, r.api, r.id)
-}
-
 // GetSongs retrieves the Song struct for the given song ID. It returns an error if the song ID is not found in the SongsMap.
 //
 // Be aware that the Songs struct that is returned is a summary of the song data, and does not include all the details that can be found in the Song struct.
@@ -318,29 +311,63 @@ func (s *Song) GetCloseTime(region Region) time.Time {
 	return s.ClosedAt[region.Idx()].Time
 }
 
-// GetCoverImageURL returns the URLs of the song cover images for the specified region.
-//
-// It returns two URLs: the first one is for the normal cover image, and the second one is for the thumbnail cover image.
-func (s *Songs) GetCoverImageURL(region Region) (string, string, error) {
-	return getJacket(s.id, s.JacketImage[region.Idx()], region.String())
+// GetCoverImageURL returns the URL of the song cover images for the specified region.
+func (s *Songs) GetCoverImageURL(region Region, thumbnailType SongThumbnailType) string {
+	return getJacket(s.id, s.JacketImage[0], region.String(), thumbnailType)
 }
 
-// GetCoverImageURL returns the URLs of the song cover images for the specified region.
-//
-// It returns two URLs: the first one is for the normal cover image, and the second one is for the thumbnail cover image.
-func (s *Song) GetCoverImageURL(region Region) (string, string, error) {
-	return getJacket(s.id, s.JacketImage[region.Idx()], region.String())
+// GetCoverImageURL returns the URL of the song cover images for the specified region.
+func (s *Song) GetCoverImageURL(region Region, thumbnailType SongThumbnailType) string {
+	return getJacket(s.id, s.JacketImage[0], region.String(), thumbnailType)
 }
 
-func getJacket(songId, musicJacket, region string) (string, string, error) {
+// GetCoverImageFile retrieves the song cover image file for the specified region and thumbnail type. It returns the image data as a byte slice and an error if any occurs during the API request or reading the response body.
+//
+// The format of the song cover image is PNG.
+func (s *Songs) GetCoverImageFile(ctx context.Context, region Region, thumbnailType SongThumbnailType) ([]byte, error) {
+	url := s.GetCoverImageURL(region, thumbnailType)
+	if url == "" {
+		return nil, fmt.Errorf("invalid cover image URL for song %q in region %q", s.id, region.String())
+	}
+	resp, err := s.api.do(ctx, http.MethodGet, url)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	return io.ReadAll(resp.Body)
+}
+
+// GetCoverImageFile retrieves the song cover image file for the specified region and thumbnail type. It returns the image data as a byte slice and an error if any occurs during the API request or reading the response body.
+//
+// The format of the song cover image is PNG.
+func (s *Song) GetCoverImageFile(ctx context.Context, region Region, thumbnailType SongThumbnailType) ([]byte, error) {
+	url := s.GetCoverImageURL(region, thumbnailType)
+	if url == "" {
+		return nil, fmt.Errorf("invalid cover image URL for song %q in region %q", s.id, region.String())
+	}
+	resp, err := s.api.do(ctx, http.MethodGet, url)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	return io.ReadAll(resp.Body)
+}
+
+func getJacket(songId, musicJacket, region string, thumbnailType SongThumbnailType) string {
 	songIdInt, err := strconv.Atoi(songId)
 	if err != nil {
-		return "", "", err
+		return ""
 	}
 	musicJacketPack := ceilTo10(songIdInt)
 	jacketURL := fmt.Sprintf("https://bestdori.com/assets/%s/musicjacket/musicjacket%d_rip/assets-star-forassetbundle-startapp-musicjacket-musicjacket%d-%s-jacket.png", region, musicJacketPack, musicJacketPack, musicJacket)
 	thumbURL := fmt.Sprintf("https://bestdori.com/assets/%s/musicjacket/musicjacket%d_rip/assets-star-forassetbundle-startapp-musicjacket-musicjacket%d-%s-thumb.png", region, musicJacketPack, musicJacketPack, musicJacket)
-	return jacketURL, thumbURL, nil
+	if thumbnailType == SongThumbnailTypeJacket {
+		return jacketURL
+	}
+	if thumbnailType == SongThumbnailTypeBanner {
+		return thumbURL
+	}
+	return ""
 }
 
 func ceilTo10(n int) int {
@@ -370,7 +397,7 @@ func (s *Song) HasSpecialDifficulty(region Region) bool {
 }
 
 // GetDifficulties retrieves the play levels of the available difficulties for the song in the given region. It returns a slice of integers representing the play levels of the difficulties.
-func (s *Songs) GetDifficulties(region Region) ([]int, error) {
+func (s *Songs) GetDifficulties(region Region) []int {
 	var difficulties []int
 	idx := []string{"0", "1", "2", "3"}
 	if s.HasSpecialDifficulty(region) {
@@ -379,15 +406,15 @@ func (s *Songs) GetDifficulties(region Region) ([]int, error) {
 	for _, i := range idx {
 		difficulty, ok := s.Difficulty[i]
 		if !ok {
-			return nil, fmt.Errorf("difficulty %q not found", i)
+			return nil
 		}
 		difficulties = append(difficulties, difficulty.PlayLevel)
 	}
-	return difficulties, nil
+	return difficulties
 }
 
 // GetDifficulties retrieves the play levels of the available difficulties for the song in the given region. It returns a slice of integers representing the play levels of the difficulties.
-func (s *Song) GetDifficulties(region Region) ([]int, error) {
+func (s *Song) GetDifficulties(region Region) []int {
 	var difficulties []int
 	idx := []string{"0", "1", "2", "3"}
 	if s.HasSpecialDifficulty(region) {
@@ -396,11 +423,11 @@ func (s *Song) GetDifficulties(region Region) ([]int, error) {
 	for _, i := range idx {
 		difficulty, ok := s.Difficulty[i]
 		if !ok {
-			return nil, fmt.Errorf("difficulty %q not found", i)
+			return nil
 		}
 		difficulties = append(difficulties, difficulty.PlayLevel)
 	}
-	return difficulties, nil
+	return difficulties
 }
 
 // GetDuration returns the duration of the song as a time.Duration value.
@@ -419,12 +446,16 @@ func (s *Songs) GetSongURL(region Region) string {
 }
 
 // GetSongFile retrieves the song's audio file for the specified region. It returns the audio data as a byte slice and an error if any occurs during the API request or reading the response body.
+//
+// The format of the song's audio file is MP3.
 func (s *Song) GetSongFile(ctx context.Context, region Region) ([]byte, error) {
 	url := s.GetSongURL(region)
 	return getSongFile(ctx, s.api, url)
 }
 
 // GetSongFile retrieves the song's audio file for the specified region. It returns the audio data as a byte slice and an error if any occurs during the API request or reading the response body.
+//
+// The format of the song's audio file is MP3.
 func (s *Songs) GetSongFile(ctx context.Context, region Region) ([]byte, error) {
 	url := s.GetSongURL(region)
 	return getSongFile(ctx, s.api, url)
@@ -436,11 +467,7 @@ func getSongFile(ctx context.Context, api *Api, url string) ([]byte, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	return data, nil
+	return io.ReadAll(resp.Body)
 }
 
 // GetNotesCounts retrieves the counts of notes for each difficulty level of the song in the given region. It returns a slice of integers representing the counts of notes for each difficulty level.
@@ -478,5 +505,11 @@ func (s *Song) GetHowToGet(region Region) string {
 
 // GetDescription returns the description of the song localized for the given region.
 func (s *Song) GetDescription(region Region) string {
+	if len(s.Description) <= region.Idx() {
+		return ""
+	}
+	if s.Description[region.Idx()] == "" {
+		return ""
+	}
 	return s.Description[region.Idx()]
 }

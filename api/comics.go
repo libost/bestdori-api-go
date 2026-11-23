@@ -154,9 +154,5 @@ func (c *Comics) GetComicFile(ctx context.Context, region Region) ([]byte, error
 		return nil, err
 	}
 	defer resp.Body.Close()
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	return data, nil
+	return io.ReadAll(resp.Body)
 }

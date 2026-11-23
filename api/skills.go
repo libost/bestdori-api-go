@@ -7,13 +7,14 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type Skills struct {
 	api               *Api
-	SimpleDescription []string  `json:"simpleDescription"`
-	Description       []string  `json:"description"`
-	Duration          []float64 `json:"duration"`
+	SimpleDescription []string       `json:"simpleDescription"`
+	Description       []string       `json:"description"`
+	Duration          []Timeduration `json:"duration"`
 	ActivationEffect  struct {
 		ActivateEffectTypes struct {
 			Score SkillActivationEffectTypesValue `json:"score"`
@@ -85,8 +86,12 @@ func (s *Skills) GetSimpleDescription(region Region) string {
 }
 
 // GetDuration returns the duration values of the skill for each level. The returned slice contains the duration values in seconds, corresponding to each level of the skill.
-func (s *Skills) GetDuration() []float64 {
-	return s.Duration
+func (s *Skills) GetDuration() []time.Duration {
+	durations := make([]time.Duration, len(s.Duration))
+	for i, d := range s.Duration {
+		durations[i] = d.Duration
+	}
+	return durations
 }
 
 // GetDescriptionFull returns the full description of the skill, replacing the {0} placeholder with the duration value for the given level.
@@ -95,7 +100,7 @@ func (s *Skills) GetDuration() []float64 {
 func (s *Skills) GetDescriptionFull(region Region, level int) string {
 	desc := s.GetDescription(region)
 	durations := s.GetDuration()
-	duration := strings.TrimSuffix(fmt.Sprintf("%.1f", durations[level-1]), ".0")
+	duration := strings.TrimSuffix(fmt.Sprintf("%.1f", durations[level-1].Seconds()), ".0")
 	onceEffect := s.GetOnceEffect()
 	if onceEffect.OnceEffectValue != nil && len(onceEffect.OnceEffectValue) >= level {
 		desc = strings.ReplaceAll(desc, "{0}", strconv.Itoa(onceEffect.OnceEffectValue[level-1]))

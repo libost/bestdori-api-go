@@ -196,9 +196,14 @@ func (l *LoginBonuses) GetBannerFile(ctx context.Context, region Region) ([]byte
 	return io.ReadAll(resp.Body)
 }
 
+// GetLoginBonus retrieves the login bonus detail associated with the LoginBonuses. It returns a pointer to the LoginBonus struct and an error if any occurred during the process.
+func (l *LoginBonuses) GetLoginBonus(ctx context.Context) (*LoginBonus, error) {
+	return l.api.GetLoginBonus(ctx, l.id)
+}
+
 // GetLoginBonus retrieves a specific login bonus by its ID. It returns a pointer to the LoginBonus struct and an error if any occurred during the process.
 func (a *Api) GetLoginBonus(ctx context.Context, loginBonusID string) (*LoginBonus, error) {
-	url := fmt.Sprintf("https://bestdori.com/api/loginbonus/%s.json", loginBonusID)
+	url := fmt.Sprintf("https://bestdori.com/api/loginCampaigns/%s.json", loginBonusID)
 	resp, err := a.do(ctx, http.MethodGet, url)
 	if err != nil {
 		return nil, err

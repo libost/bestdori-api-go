@@ -6,7 +6,6 @@
 package api
 
 import (
-	"bytes"
 	"context"
 	"encoding/json/v2"
 	"errors"
@@ -15,6 +14,7 @@ import (
 	"maps"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -33,7 +33,7 @@ type Events struct {
 	BannerAssetBundleName string             `json:"bannerAssetBundleName"`
 	StartAt               []Timestamp        `json:"startAt"`
 	EndAt                 []Timestamp        `json:"endAt"`
-	Attribute             []Attributes       `json:"attribute"`
+	Attributes            []Attributes       `json:"attributes"`
 	Characters            []EventsCharacters `json:"characters"`
 	Members               []EventMembers     `json:"members"`
 	LimitBreaks           []EventLimitBreaks `json:"limitBreaks"`
@@ -173,7 +173,7 @@ type RatesMap []Rates
 //
 // It returns a pointer to the EventsMap and an error if any occurs during the API request or JSON unmarshalling.
 func (a *Api) InitEvents(ctx context.Context) (*EventsMap, error) {
-	resp, err := a.do(ctx, http.MethodGet, cardsURL)
+	resp, err := a.do(ctx, http.MethodGet, eventsURL)
 	if err != nil {
 		return nil, err
 	}
@@ -300,7 +300,7 @@ func (e *Events) GetEndTime(region Region) time.Time {
 
 // GetBannerURL returns the URL of the event banner for the given region.
 func (e *Events) GetBannerURL(region Region) string {
-	return "https://bestdori.com/assets/" + region.String() + "/events/" + e.AssetBundleName + "/images_rip/banner.png"
+	return "https://bestdori.com/assets/" + region.String() + "/event/" + e.AssetBundleName + "/images_rip/banner.png"
 }
 
 // GetBannerFile retrieves the event banner image file for the given region.
@@ -317,7 +317,10 @@ func (e *Events) GetType(region Region) string {
 
 // GetAttribute returns the attribute and its bonus percentage for the event.
 func (e *Events) GetAttribute() (string, int) {
-	return e.Attribute[0].Attribute, e.Attribute[0].Percent
+	if len(e.Attributes) == 0 {
+		return "", 0
+	}
+	return strings.ToUpper(e.Attributes[0].Attribute), e.Attributes[0].Percent
 }
 
 // GetEventCharacters returns the list of event characters for the given region.
@@ -392,7 +395,7 @@ func (e *Event) GetPublicEndTime(region Region) time.Time {
 
 // GetBannerURL returns the URL of the event banner for the given region.
 func (e *Event) GetBannerURL(region Region) string {
-	return "https://bestdori.com/assets/" + region.String() + "/events/" + e.AssetBundleName + "/images_rip/banner.png"
+	return "https://bestdori.com/assets/" + region.String() + "/event/" + e.AssetBundleName + "/images_rip/banner.png"
 }
 
 // GetBannerFile retrieves the event banner image file for the given region.
@@ -409,7 +412,10 @@ func (e *Event) GetType(region Region) string {
 
 // GetAttribute returns the attribute and its bonus percentage for the event.
 func (e *Event) GetAttribute() (string, int) {
-	return e.Attributes[0].Attribute, e.Attributes[0].Percent
+	if len(e.Attributes) == 0 {
+		return "", 0
+	}
+	return strings.ToUpper(e.Attributes[0].Attribute), e.Attributes[0].Percent
 }
 
 // GetEventCharacters returns the list of event characters.
@@ -482,7 +488,6 @@ func (e *Event) GetAttributesAndCharatersBonus() int {
 }
 
 func getBannerFile(ctx context.Context, api *Api, url string) ([]byte, error) {
-	var buf bytes.Buffer
 	resp, err := api.do(ctx, http.MethodGet, url)
 	if err != nil {
 		return nil, err
@@ -494,10 +499,7 @@ func getBannerFile(ctx context.Context, api *Api, url string) ([]byte, error) {
 	if contentType := resp.Header.Get("Content-Type"); contentType != "image/png" {
 		return nil, fmt.Errorf("unexpected content type: %s", contentType)
 	}
-	if _, err := io.Copy(&buf, resp.Body); err != nil {
-		return nil, err
-	}
-	return buf.Bytes(), nil
+	return io.ReadAll(resp.Body)
 }
 
 func getRates(ctx context.Context, api *Api) (RatesMap, error) {

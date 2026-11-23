@@ -113,11 +113,7 @@ func (c *Character) GetBandLogoFile(ctx context.Context) ([]byte, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	return data, nil
+	return io.ReadAll(resp.Body)
 }
 
 // GetBandLogoFile retrieves the band logo image file for the given character.
@@ -135,11 +131,7 @@ func (c *Characters) GetBandLogoFile(ctx context.Context) ([]byte, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	return data, nil
+	return io.ReadAll(resp.Body)
 }
 
 // GetBandLogoFile retrieves the band logo image file for the given song.
@@ -157,11 +149,7 @@ func (s *Songs) GetBandLogoFile(ctx context.Context) ([]byte, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	return data, nil
+	return io.ReadAll(resp.Body)
 }
 
 // GetBandLogoFile retrieves the band logo image file for the given song.
@@ -179,9 +167,5 @@ func (s *Song) GetBandLogoFile(ctx context.Context) ([]byte, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	return data, nil
+	return io.ReadAll(resp.Body)
 }

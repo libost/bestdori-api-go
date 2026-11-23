@@ -13,7 +13,7 @@ type Recent struct {
 	Songs      map[string]RecentSongs      `json:"songs"`
 	Events     map[string]RecentEvents     `json:"events"`
 	Gacha      map[string]RecentGachas     `json:"gacha"`
-	LoginBonus map[string]RecentLoginBonus `json:"loginBonus"`
+	LoginBonus map[string]RecentLoginBonus `json:"loginBonuses"`
 }
 
 type RecentSongs struct {
@@ -175,9 +175,16 @@ func (r *Recent) GetRecentGachasForRegion(region Region) []RecentGachas {
 func (r *Recent) GetRecentLoginBonusForRegion(region Region) []RecentLoginBonus {
 	results := make([]RecentLoginBonus, 0)
 	now := time.Now()
+	idx := region.Idx()
+	if idx < 0 {
+		return results
+	}
 	for id, loginBonus := range r.LoginBonus {
-		if !loginBonus.PublishedAt[region.Idx()].Time.IsZero() {
-			if loginBonus.PublishedAt[region.Idx()].Time.Before(now) && loginBonus.ClosedAt[region.Idx()].Time.After(now) {
+		if idx >= len(loginBonus.PublishedAt) || idx >= len(loginBonus.ClosedAt) {
+			continue
+		}
+		if !loginBonus.PublishedAt[idx].Time.IsZero() {
+			if loginBonus.PublishedAt[idx].Time.Before(now) && loginBonus.ClosedAt[idx].Time.After(now) {
 				loginBonus.id = id
 				loginBonus.api = r.api
 				results = append(results, loginBonus)

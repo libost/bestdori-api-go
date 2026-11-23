@@ -111,10 +111,10 @@ func (s *Song) GetSongMetaFactors(ctx context.Context, difficulty Difficulty, sk
 // difficulty is the difficulty level
 //
 // skillLength is the length of the skill in seconds (pass "7" if you have no idea what it is).
-func (s *Songs) GetSongMetaFactors(ctx context.Context, songId string, difficulty Difficulty, skillLength string) (*SongMetaFactors, error) {
+func (s *Songs) GetSongMetaFactors(ctx context.Context, difficulty Difficulty, skillLength string) (*SongMetaFactors, error) {
 	songMeta, err := s.api.InitSongMeta(ctx)
 	if err != nil {
 		return nil, err
 	}
-	return songMeta.GetSongMetaFactors(songId, skillLength, difficulty)
+	return songMeta.GetSongMetaFactors(s.id, skillLength, difficulty)
 }

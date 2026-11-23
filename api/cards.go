@@ -311,12 +311,8 @@ func (c *Card) GetArtsFile(ctx context.Context, region Region, status CardStatus
 	if err != nil {
 		return nil, err
 	}
-	data, err := io.ReadAll(resp.Body)
-	resp.Body.Close()
-	if err != nil {
-		return nil, err
-	}
-	return data, nil
+	defer resp.Body.Close()
+	return io.ReadAll(resp.Body)
 }
 
 // GetArtsFile returns the card arts as byte slices for the specified region and status.
@@ -331,12 +327,8 @@ func (c *Cards) GetArtsFile(ctx context.Context, region Region, status CardStatu
 	if err != nil {
 		return nil, err
 	}
-	data, err := io.ReadAll(resp.Body)
-	resp.Body.Close()
-	if err != nil {
-		return nil, err
-	}
-	return data, nil
+	defer resp.Body.Close()
+	return io.ReadAll(resp.Body)
 }
 
 // GetReleaseTime returns the release time of the card for the given region.
@@ -396,11 +388,7 @@ func (c *Card) GetThumbnailFile(ctx context.Context, region Region, status CardS
 		return nil, err
 	}
 	defer resp.Body.Close()
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	return data, nil
+	return io.ReadAll(resp.Body)
 }
 
 // GetThumbnailFile retrieves the card thumbnail image file for the given region and status.
@@ -418,11 +406,7 @@ func (c *Cards) GetThumbnailFile(ctx context.Context, region Region, status Card
 		return nil, err
 	}
 	defer resp.Body.Close()
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	return data, nil
+	return io.ReadAll(resp.Body)
 }
 
 // GetThumbnailFrameURL returns the URL of the card thumbnail frame for the given card. It returns an empty string if the thumbnail frame is not available.
@@ -453,11 +437,7 @@ func (c *Card) GetThumbnailFrameFile(ctx context.Context) ([]byte, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	return data, nil
+	return io.ReadAll(resp.Body)
 }
 
 // GetThumbnailFrameFile retrieves the card thumbnail frame image file for the given card.
@@ -472,11 +452,7 @@ func (c *Cards) GetThumbnailFrameFile(ctx context.Context) ([]byte, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	return data, nil
+	return io.ReadAll(resp.Body)
 }
 
 // GetAttributeIconURL returns the URL of the attribute icon for the given card.
@@ -499,11 +475,7 @@ func (c *Card) GetAttributeIconFile(ctx context.Context) ([]byte, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	return data, nil
+	return io.ReadAll(resp.Body)
 }
 
 // GetAttributeIconFile retrieves the attribute icon image file for the given card.
@@ -516,9 +488,5 @@ func (c *Cards) GetAttributeIconFile(ctx context.Context) ([]byte, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	return data, nil
+	return io.ReadAll(resp.Body)
 }

@@ -99,6 +99,9 @@ func (a *Api) InitCharacters(ctx context.Context) (*CharactersMap, error) {
 	return &charactersMap, nil
 }
 
+// UpdateCharacters updates the CharactersMap with the latest data from the API.
+//
+// It uses the ETag header to check if the data has changed since the last update. If the data has not changed, it does nothing. If the data has changed, it updates the CharactersMap with the new data and initializes the api field for each character in the map.
 func (c *CharactersMap) UpdateCharacters(ctx context.Context) error {
 	var api *Api
 	var etag string
@@ -149,6 +152,10 @@ func (c *CharactersMap) GetCharacter(characterID int) (*Characters, error) {
 	return &character, nil
 }
 
+func (a *Api) GetCharacter(ctx context.Context, characterID int) (*Character, error) {
+	return getCharacter(ctx, a, characterID)
+}
+
 // GetCharacter retrieves a Character struct from the API based on the Card.
 func (c *Cards) GetCharacter(ctx context.Context) (*Character, error) {
 	return getCharacter(ctx, c.api, c.CharacterID)
@@ -160,9 +167,12 @@ func (c *Card) GetCharacter(ctx context.Context) (*Character, error) {
 }
 
 // GetCharacter retrieves a Character struct from the API based on the EventCharacters.
-func (e *EventCharacters) GetCharacter(ctx context.Context) (*Character, error) {
+//
+// It also returns the bonus percentage associated with the EventCharacters.
+func (e *EventCharacters) GetCharacter(ctx context.Context) (*Character, int, error) {
 	charId, _ := e.CharacterID.Int()
-	return getCharacter(ctx, e.api, charId)
+	char, err := getCharacter(ctx, e.api, charId)
+	return char, e.Percent, err
 }
 
 // GetCharacter retrieves a Character struct from the API based on the EventsCharacters.

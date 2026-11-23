@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"slices"
 	"strconv"
 	"time"
 )
@@ -64,38 +63,14 @@ type Tier interface {
 	Tiers() []int
 }
 
-// RegionTier identifies a ranking tier in a game region.
-type RegionTier struct {
-	Region Region
-	Tier   int
-}
-
-// NewRegionTier creates a region/tier parameter and validates that the tier
-// is supported by the region.
-func NewRegionTier(region Region, tier int) (RegionTier, error) {
-	regionTier := RegionTier{Region: region, Tier: tier}
-	if err := regionTier.Validate(); err != nil {
-		return RegionTier{}, err
-	}
-	return regionTier, nil
-}
-
-// Validate checks that the region and tier combination is supported.
-func (rt RegionTier) Validate() error {
-	if slices.Contains(rt.Region.Tiers(), rt.Tier) {
-		return nil
-	}
-	return fmt.Errorf("invalid tier %d for region %s", rt.Tier, rt.Region)
-}
-
 type Difficulty string
 
 const (
-	DiffcultyEasy    Difficulty = "easy"
-	DiffcultyNormal  Difficulty = "normal"
-	DiffcultyHard    Difficulty = "hard"
-	DiffcultyExpert  Difficulty = "expert"
-	DiffcultySpecial Difficulty = "special"
+	DifficultyEasy    Difficulty = "easy"
+	DifficultyNormal  Difficulty = "normal"
+	DifficultyHard    Difficulty = "hard"
+	DifficultyExpert  Difficulty = "expert"
+	DifficultySpecial Difficulty = "special"
 )
 
 func (d Difficulty) String() string {
@@ -130,6 +105,19 @@ const (
 
 func (cs CardStatus) String() string {
 	return string(cs)
+}
+
+type SongThumbnailType string
+
+const (
+	// SongThumbnailTypeJacket represents the jacket thumbnail type. It has a higher resolution.
+	SongThumbnailTypeJacket SongThumbnailType = "jacket"
+	// SongThumbnailTypeBanner represents the banner thumbnail type. It has a lower resolution.
+	SongThumbnailTypeBanner SongThumbnailType = "banner"
+)
+
+func (stt SongThumbnailType) String() string {
+	return string(stt)
 }
 
 // Tiers returns the supported ranking tiers for a region.

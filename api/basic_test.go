@@ -1,28 +1,83 @@
 package api
 
-import "testing"
+import (
+	"testing"
+)
 
-func TestNewRegionTier(t *testing.T) {
-	regionTier, err := NewRegionTier(RegionJP, 100)
-	if err != nil {
-		t.Fatalf("NewRegionTier() error = %v", err)
+func TestDifficuty(t *testing.T) {
+	testCases := []struct {
+		difficulty Difficulty
+		str        string
+		color      string
+		idx        int
+	}{
+		{DifficultyEasy, "easy", "#3076F8", 0},
+		{DifficultyNormal, "normal", "#188A28", 1},
+		{DifficultyHard, "hard", "#D1861A", 2},
+		{DifficultyExpert, "expert", "#FD2A30", 3},
+		{DifficultySpecial, "special", "#F12199", 4},
 	}
-	if regionTier.Region != RegionJP || regionTier.Tier != 100 {
-		t.Fatalf("NewRegionTier() = %+v, want region jp and tier 100", regionTier)
+	for _, tc := range testCases {
+		if tc.difficulty.String() != tc.str {
+			t.Errorf("Expected difficulty string '%s', got '%s'", tc.str, tc.difficulty.String())
+		}
+		if tc.difficulty.Color() != tc.color {
+			t.Errorf("Expected difficulty color '%s', got '%s'", tc.color, tc.difficulty.Color())
+		}
+		if tc.difficulty.Idx() != tc.idx {
+			t.Errorf("Expected difficulty index %d, got %d", tc.idx, tc.difficulty.Idx())
+		}
 	}
 }
 
-func TestNewRegionTierRejectsUnsupportedTier(t *testing.T) {
-	if _, err := NewRegionTier(RegionTW, 10000); err == nil {
-		t.Fatal("NewRegionTier() accepted a tier unsupported by the region")
+func TestCardStatus(t *testing.T) {
+	testCases := []struct {
+		cardStatus CardStatus
+		str        string
+	}{
+		{CardStatusNormal, "normal"},
+		{CardStatusAfterTraining, "after_training"},
+	}
+	for _, tc := range testCases {
+		if tc.cardStatus.String() != tc.str {
+			t.Errorf("Expected card status string '%s', got '%s'", tc.str, tc.cardStatus.String())
+		}
 	}
 }
 
-func TestRegionTiers(t *testing.T) {
-	if got := RegionKR.Tiers(); len(got) != 1 || got[0] != 100 {
-		t.Fatalf("RegionKR.Tiers() = %v, want [100]", got)
+func TestSongThumbnailType(t *testing.T) {
+	testCases := []struct {
+		thumbnailType SongThumbnailType
+		str           string
+	}{
+		{SongThumbnailTypeJacket, "jacket"},
+		{SongThumbnailTypeBanner, "banner"},
 	}
-	if got := Region("unknown").Tiers(); got != nil {
-		t.Fatalf("unknown Region.Tiers() = %v, want nil", got)
+	for _, tc := range testCases {
+		if tc.thumbnailType.String() != tc.str {
+			t.Errorf("Expected song thumbnail type string '%s', got '%s'", tc.str, tc.thumbnailType.String())
+		}
+	}
+}
+
+func TestRegion(t *testing.T) {
+	testCases := []struct {
+		region Region
+		idx    int
+		str    string
+	}{
+		{RegionJP, 0, "jp"},
+		{RegionEN, 1, "en"},
+		{RegionTW, 2, "tw"},
+		{RegionCN, 3, "cn"},
+		{RegionKR, 4, "kr"},
+	}
+	for _, tc := range testCases {
+		if tc.region.Idx() != tc.idx {
+			t.Errorf("Expected region index %d, got %d", tc.idx, tc.region.Idx())
+		}
+		if tc.region.String() != tc.str {
+			t.Errorf("Expected region string '%s', got '%s'", tc.str, tc.region.String())
+		}
 	}
 }
