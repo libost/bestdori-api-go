@@ -12,6 +12,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"maps"
 	"net/http"
 	"strconv"
 	"time"
@@ -25,6 +26,7 @@ var (
 
 type Events struct {
 	api                   *Api
+	etag                  string
 	EventType             string             `json:"eventType"`
 	EventName             []string           `json:"eventName"`
 	AssetBundleName       string             `json:"assetBundleName"`
@@ -182,9 +184,48 @@ func (a *Api) InitEvents(ctx context.Context) (*EventsMap, error) {
 	}
 	for eventID, events := range eventsMap {
 		events.api = a
+		events.etag = resp.Header.Get("ETag")
 		eventsMap[eventID] = events
 	}
 	return &eventsMap, nil
+}
+
+// UpdateEvents updates the EventsMap with the latest data from the API.
+//
+// It uses the ETag header to check if the data has changed since the last update. If the data has not changed, it does nothing. If the data has changed, it updates the EventsMap with the new data and initializes the api field for each event in the map.
+func (e *EventsMap) UpdateEvents(ctx context.Context) error {
+	var etag string
+	var api *Api
+	for _, events := range *e {
+		etag = events.etag
+		if etag == "" {
+			continue
+		}
+		api = events.api
+		if api == nil {
+			continue
+		}
+		break
+	}
+	resp, err := api.update(ctx, http.MethodGet, eventsURL, etag)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode == http.StatusNotModified {
+		return nil
+	}
+	var eventsMap EventsMap
+	if err = json.UnmarshalRead(resp.Body, &eventsMap); err != nil {
+		return err
+	}
+	for eventID, events := range eventsMap {
+		events.api = api
+		events.etag = resp.Header.Get("ETag")
+		eventsMap[eventID] = events
+	}
+	maps.Copy(*e, eventsMap)
+	return nil
 }
 
 // GetEvent retrieves an Events struct from the EventsMap based on the provided event ID.

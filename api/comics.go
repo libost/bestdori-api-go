@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"maps"
 	"net/http"
 	"strconv"
 	"strings"
@@ -22,6 +23,7 @@ type ComicsMap map[string]Comics
 type Comics struct {
 	id              string
 	api             *Api
+	etag            string
 	AssetBundleName string      `json:"assetBundleName"`
 	Title           []string    `json:"title"`
 	SubTitle        []string    `json:"subTitle"`
@@ -45,9 +47,49 @@ func (a *Api) InitComics(ctx context.Context) (*ComicsMap, error) {
 	for comicID, comic := range comicsMap {
 		comic.id = comicID
 		comic.api = a
+		comic.etag = resp.Header.Get("ETag")
 		comicsMap[comicID] = comic
 	}
 	return &comicsMap, nil
+}
+
+// UpdateComics updates the ComicsMap with the latest data from the API.
+//
+// It uses the ETag header to check if the data has changed since the last update. If the data has not changed, it does nothing. If the data has changed, it updates the ComicsMap with the new data and initializes the api field for each comic in the map.
+func (c *ComicsMap) UpdateComics(ctx context.Context) error {
+	var etag string
+	var api *Api
+	for _, comic := range *c {
+		etag = comic.etag
+		if etag == "" {
+			continue
+		}
+		api = comic.api
+		if api == nil {
+			continue
+		}
+		break
+	}
+	resp, err := api.update(ctx, http.MethodGet, comicsURL, etag)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode == http.StatusNotModified {
+		return nil
+	}
+	var comicsMap ComicsMap
+	if err = json.UnmarshalRead(resp.Body, &comicsMap); err != nil {
+		return err
+	}
+	for comicID, comic := range comicsMap {
+		comic.id = comicID
+		comic.api = api
+		comic.etag = resp.Header.Get("ETag")
+		comicsMap[comicID] = comic
+	}
+	maps.Copy(*c, comicsMap)
+	return nil
 }
 
 // GetComic retrieves a Comics struct from the ComicsMap based on the provided comic ID.

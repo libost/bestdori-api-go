@@ -5,14 +5,16 @@ import (
 	"encoding/json/v2"
 	"fmt"
 	"io"
+	"maps"
 	"net/http"
 	"strconv"
 	"time"
 )
 
 type Songs struct {
-	id  string
-	api *Api
+	id   string
+	api  *Api
+	etag string
 	// `normal` for og, `anime` for covers and `tie-up` for extras
 	Tag         string                         `json:"tag"`
 	BandID      int                            `json:"bandId"`
@@ -108,9 +110,47 @@ func (a *Api) InitSongs(ctx context.Context) (*SongsMap, error) {
 	for id, song := range songs {
 		song.id = id
 		song.api = a
+		song.etag = resp.Header.Get("ETag")
 		songs[id] = song
 	}
 	return &songs, nil
+}
+
+// UpdateSongs updates the SongsMap with the latest data from the API. It uses the ETag header to check if the data has changed since the last update. If the data has not changed, it does nothing. If the data has changed, it updates the SongsMap with the new data and initializes the api field for each song in the map.
+func (s *SongsMap) UpdateSongs(ctx context.Context) error {
+	var etag string
+	var api *Api
+	for _, song := range *s {
+		etag = song.etag
+		if etag == "" {
+			continue
+		}
+		api = song.api
+		if api == nil {
+			continue
+		}
+		break
+	}
+	resp, err := api.update(ctx, http.MethodGet, songsURL, etag)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode == http.StatusNotModified {
+		return nil
+	}
+	var songs SongsMap
+	if err = json.UnmarshalRead(resp.Body, &songs); err != nil {
+		return err
+	}
+	for id, song := range songs {
+		song.id = id
+		song.api = api
+		song.etag = resp.Header.Get("ETag")
+		songs[id] = song
+	}
+	maps.Copy(*s, songs)
+	return nil
 }
 
 func getSongs(ctx context.Context, api *Api, songId string) (*Songs, error) {

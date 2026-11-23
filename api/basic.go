@@ -5,12 +5,18 @@ import (
 	"context"
 	"encoding/json/jsontext"
 	"encoding/json/v2"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
 	"slices"
 	"strconv"
 	"time"
+)
+
+var (
+	// ErrNilCtx is returned when a nil context is passed to an API method.
+	ErrNilCtx = errors.New("context is nil")
 )
 
 const (
@@ -315,7 +321,9 @@ func (a *Api) do(ctx context.Context, method, requestURL string) (*http.Response
 	if a == nil || a.client == nil {
 		a = defaultApi
 	}
-
+	if ctx == nil {
+		return nil, ErrNilCtx
+	}
 	req, err := http.NewRequestWithContext(ctx, method, requestURL, nil)
 	if err != nil {
 		return nil, err
@@ -327,7 +335,9 @@ func (a *Api) update(ctx context.Context, method, requestURL, etag string) (*htt
 	if a == nil || a.client == nil {
 		a = defaultApi
 	}
-
+	if ctx == nil {
+		return nil, ErrNilCtx
+	}
 	req, err := http.NewRequestWithContext(ctx, method, requestURL, nil)
 	if err != nil {
 		return nil, err

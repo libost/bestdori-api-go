@@ -9,6 +9,7 @@ import (
 
 type Recent struct {
 	api        *Api
+	etag       string
 	Songs      map[string]RecentSongs      `json:"songs"`
 	Events     map[string]RecentEvents     `json:"events"`
 	Gacha      map[string]RecentGachas     `json:"gacha"`
@@ -59,6 +60,26 @@ func (a *Api) GetRecent(ctx context.Context) (*Recent, error) {
 	}
 	recent.api = a
 	return &recent, nil
+}
+
+// UpdateRecent updates the Recent struct with the latest data from the API. It uses the ETag header to check if the data has changed since the last update. If the data has not changed, it does nothing. If the data has changed, it updates the Recent struct with the new data and initializes the api field.
+func (r *Recent) UpdateRecent(ctx context.Context) error {
+	resp, err := r.api.update(ctx, http.MethodGet, newsURL, r.etag)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode == http.StatusNotModified {
+		return nil
+	}
+	var recent Recent
+	if err = json.UnmarshalRead(resp.Body, &recent); err != nil {
+		return err
+	}
+	recent.api = r.api
+	recent.etag = resp.Header.Get("ETag")
+	*r = recent
+	return nil
 }
 
 // GetRecentSongsForRegion retrieves the recent songs for a given region. It returns a slice of RecentSongs that are published in the specified region.

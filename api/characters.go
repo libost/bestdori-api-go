@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json/v2"
 	"errors"
+	"maps"
 	"net/http"
 	"strconv"
 	"time"
@@ -11,6 +12,7 @@ import (
 
 type Characters struct {
 	api           *Api
+	etag          string
 	CharacterType string   `json:"characterType"`
 	CharacterName []string `json:"characterName"`
 	FirstName     []string `json:"firstName"`
@@ -91,9 +93,47 @@ func (a *Api) InitCharacters(ctx context.Context) (*CharactersMap, error) {
 	}
 	for characterID, character := range charactersMap {
 		character.api = a
+		character.etag = resp.Header.Get("ETag")
 		charactersMap[characterID] = character
 	}
 	return &charactersMap, nil
+}
+
+func (c *CharactersMap) UpdateCharacters(ctx context.Context) error {
+	var api *Api
+	var etag string
+	for _, character := range *c {
+		api = character.api
+		if api == nil {
+			continue
+		}
+		etag = character.etag
+		if etag == "" {
+			continue
+		}
+		break
+	}
+	if api == nil {
+		return errors.New("api is nil")
+	}
+	resp, err := api.update(ctx, http.MethodGet, charactersURL, etag)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode == http.StatusNotModified {
+		return nil
+	}
+	var charactersMap CharactersMap
+	if err = json.UnmarshalRead(resp.Body, &charactersMap); err != nil {
+		return err
+	}
+	for characterID, character := range charactersMap {
+		character.api = api
+		charactersMap[characterID] = character
+	}
+	maps.Copy(*c, charactersMap)
+	return nil
 }
 
 // GetCharacter retrieves a Character from the CharactersMap based on the provided character ID.

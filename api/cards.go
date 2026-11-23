@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"maps"
 	"net/http"
 	"strconv"
 	"strings"
@@ -21,6 +22,7 @@ var (
 type Cards struct {
 	api             *Api
 	id              string
+	etag            string
 	CharacterID     int         `json:"characterId"`
 	Rarity          int         `json:"rarity"`
 	Attribute       string      `json:"attribute"`
@@ -110,9 +112,49 @@ func (a *Api) InitCards(ctx context.Context) (*CardsMap, error) {
 	for cardID, card := range cardsMap {
 		card.api = a
 		card.id = cardID
+		card.etag = resp.Header.Get("ETag")
 		cardsMap[cardID] = card
 	}
 	return &cardsMap, nil
+}
+
+// UpdateCards updates the CardsMap with the latest data from the API.
+//
+// It uses the ETag header to check if the data has changed since the last update. If the data has not changed, it does nothing. If the data has changed, it updates the CardsMap with the new data and initializes the api field for each card in the map.
+func (c *CardsMap) UpdateCards(ctx context.Context) error {
+	var etag string
+	var api *Api
+	for _, card := range *c {
+		etag = card.etag
+		if etag == "" {
+			continue
+		}
+		api = card.api
+		if api == nil {
+			continue
+		}
+		break
+	}
+	resp, err := api.update(ctx, http.MethodGet, cardsURL, etag)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode == http.StatusNotModified {
+		return nil
+	}
+	var cardsMap CardsMap
+	if err = json.UnmarshalRead(resp.Body, &cardsMap); err != nil {
+		return err
+	}
+	for cardID, card := range cardsMap {
+		card.api = api
+		card.id = cardID
+		card.etag = resp.Header.Get("ETag")
+		cardsMap[cardID] = card
+	}
+	maps.Copy((*c), cardsMap)
+	return nil
 }
 
 // GetCard returns a pointer to a Card struct for the given cardId. It returns an error if the cardId is not valid or if the card is not found in the CardsMap.

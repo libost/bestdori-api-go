@@ -6,6 +6,7 @@ import (
 	"encoding/json/v2"
 	"fmt"
 	"io"
+	"maps"
 	"math"
 	"math/rand/v2"
 	"net/http"
@@ -15,6 +16,7 @@ import (
 type Gachas struct {
 	id                    string
 	api                   *Api
+	etag                  string
 	ResourceName          string      `json:"resourceName"`
 	BannerAssetBundleName string      `json:"bannerAssetBundleName"`
 	GachaName             []string    `json:"gachaName"`
@@ -116,9 +118,48 @@ func (a *Api) InitGachas(ctx context.Context) (*GachasMap, error) {
 	for id, gacha := range gachas {
 		gacha.api = a
 		gacha.id = id
+		gacha.etag = resp.Header.Get("ETag")
 		gachas[id] = gacha
 	}
 	return &gachas, nil
+}
+
+// UpdateGachas updates the GachasMap with the latest data from the API.
+//
+// It uses the ETag header to check if the data has changed since the last update. If the data has not changed, it does nothing. If the data has changed, it updates the GachasMap with the new data and initializes the api field for each gacha in the map.
+func (g *GachasMap) UpdateGachas(ctx context.Context) error {
+	var etag string
+	var api *Api
+	for _, gacha := range *g {
+		api = gacha.api
+		if api == nil {
+			continue
+		}
+		etag = gacha.etag
+		if etag == "" {
+			continue
+		}
+		break
+	}
+	resp, err := api.update(ctx, http.MethodGet, gachaURL, etag)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode == http.StatusNotModified {
+		return nil
+	}
+	var gachas GachasMap
+	if err = json.UnmarshalRead(resp.Body, &gachas); err != nil {
+		return err
+	}
+	for gachaID, gacha := range gachas {
+		gacha.api = api
+		gacha.etag = resp.Header.Get("ETag")
+		gachas[gachaID] = gacha
+	}
+	maps.Copy(*g, gachas)
+	return nil
 }
 
 // GetGacha retrieves a specific Gacha from the GachasMap by its ID. It returns an error if the Gacha is not found.
