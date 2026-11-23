@@ -153,32 +153,6 @@ func (s *SongsMap) UpdateSongs(ctx context.Context) error {
 	return nil
 }
 
-func getSongs(ctx context.Context, api *Api, songId string) (*Songs, error) {
-	resp, err := api.do(ctx, http.MethodGet, songsURL)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-	var songs SongsMap
-	if err = json.UnmarshalRead(resp.Body, &songs); err != nil {
-		return nil, err
-	}
-	song, ok := songs[songId]
-	if !ok {
-		return nil, fmt.Errorf("song %q not found", songId)
-	}
-	song.api = api
-	song.id = songId
-	return &song, nil
-}
-
-// GetSongs retrieves the Songs struct for the RecentSongs struct. It returns an error if the song ID is not found in the SongsMap.
-//
-// Be aware that the Songs struct that is returned is a summary of the song data, and does not include all the details that can be found in the Song struct.
-func (r *RecentSongs) GetSongs(ctx context.Context) (*Songs, error) {
-	return getSongs(ctx, r.api, r.id)
-}
-
 // GetSongs retrieves the Song struct for the SongsMap struct. It returns an error if the song ID is not found in the SongsMap.
 func (r *RecentSongs) GetSong(ctx context.Context) (*Song, error) {
 	return r.api.GetSong(ctx, r.id)

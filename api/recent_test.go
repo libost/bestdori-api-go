@@ -82,9 +82,6 @@ func TestGetRecentByRegion(t *testing.T) {
 	if songd, err := recent.GetRecentSongsForRegion(RegionCN)[0].GetSong(context.Background()); err != nil || songd == nil {
 		t.Fatalf("Expected to get song details for recent song in region CN, got song details: %v, error: %v", songd, err)
 	}
-	if songs, err := recent.GetRecentSongsForRegion(RegionCN)[0].GetSongs(context.Background()); err != nil || songs == nil {
-		t.Fatalf("Expected to get songs for recent song in region CN, got songs: %v, error: %v", songs, err)
-	}
 	lb, err := recent.GetRecentLoginBonusForRegion(RegionEN)[0].GetLoginBonus(context.Background())
 	if err != nil || lb == nil {
 		t.Fatalf("Expected to get login bonus for recent login bonus in region EN, got login bonus: %v, error: %v", lb, err)

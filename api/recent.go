@@ -204,3 +204,43 @@ func (r *Recent) GetRecentLoginBonusForRegion(region Region) []RecentLoginBonus 
 	}
 	return results
 }
+
+// GetTitle returns the title of the recent event for the specified region.
+func (e *RecentEvents) GetTitle(region Region) string {
+	return e.EventName[region.Idx()]
+}
+
+// GetStartTime returns the start time of the recent event for the specified region.
+func (e *RecentEvents) GetStartTime(region Region) time.Time {
+	return e.StartAt[region.Idx()].Time
+}
+
+// GetEndTime returns the end time of the recent event for the specified region.
+func (e *RecentEvents) GetEndTime(region Region) time.Time {
+	return e.EndAt[region.Idx()].Time
+}
+
+// GetTitle returns the title of the recent gacha for the specified region.
+func (g *RecentGachas) GetTitle(region Region) string {
+	return g.GachaName[region.Idx()]
+}
+
+// GetPublishTime returns the publish time of the recent gacha for the specified region.
+func (g *RecentGachas) GetPublishTime(region Region) time.Time {
+	return g.PublishedAt[region.Idx()].Time
+}
+
+// GetCloseTime returns the close time of the recent gacha for the specified region.
+func (g *RecentGachas) GetCloseTime(region Region) time.Time {
+	return g.ClosedAt[region.Idx()].Time
+}
+
+// GetTitle returns the title of the recent song for the specified region.
+func (s *RecentSongs) GetTitle(region Region) string {
+	return s.MusicTitle[region.Idx()]
+}
+
+// GetPublishTime returns the publish time of the recent song for the specified region.
+func (s *RecentSongs) GetPublishTime(region Region) time.Time {
+	return s.PublishedAt[region.Idx()].Time
+}

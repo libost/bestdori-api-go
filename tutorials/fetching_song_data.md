@@ -45,7 +45,7 @@ if err != nil {
     log.Fatal(err)
 }
 duration := songDetails.GetDuration().Seconds()
-fmt.Printf("Song Duration: %.2f seconds\n", duration) // "Song Duration: 90.048 seconds"
+fmt.Printf("Song Duration: %.3f seconds\n", duration) // "Song Duration: 90.048 seconds"
 ```
 
 ## Get Something More

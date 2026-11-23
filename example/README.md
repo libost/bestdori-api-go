@@ -1,1 +1,2 @@
 # Example Usage of the Bestdori API for Go
+Here are some examples of how to use the Bestdori API for Go. These examples demonstrate how to fetch songs, events, cards, and gachas, as well as how to get detailed information about those above.
