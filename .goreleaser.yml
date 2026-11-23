@@ -4,6 +4,9 @@ release:
   prerelease: auto
   target_commitish: "{{ .Commit }}"
 
+builds:
+  - skip: true
+
 changelog:
   sort: asc
   use: github
