@@ -115,4 +115,12 @@ func TestGetCharacterNames(t *testing.T) {
 			t.Fatal("Expected to find character name '冰川 纱夜' for ID '22', but did not")
 		}
 	}
+	for i := range nameMap {
+		if nameMap[i].Id == "31" {
+			if slices.Contains(nameMap[i].Names, "Layer") {
+				return
+			}
+			t.Fatal("Expected to find character nickname 'Layer' for ID '31', but did not")
+		}
+	}
 }
