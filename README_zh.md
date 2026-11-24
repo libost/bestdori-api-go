@@ -53,7 +53,7 @@ func main() {
 ## 特性
 - 零依赖，仅使用标准库。
 - 易于使用且文档齐全。
-- 不仅仅是一个 API 包装器，它还提供了额外的功能，例如 [活动分数线预测](tutorials/fetching_event_data.md#Cutoff-Prediction)、[抽卡模拟](tutorials/fetching_gacha_data.md#Gacha-Emulation) 等。
+- 不仅仅是一个 API 包装器，它还提供了额外的功能，例如 [活动分数线预测](tutorials/fetching_event_data_zh.md#档线预测)、[抽卡模拟](tutorials/fetching_gacha_data_zh.md#模拟抽卡) 等。
 
 ## 教程
 不知道如何使用此库？请参阅 [教程](tutorials) 目录中的教程，了解如何获取歌曲、活动、卡牌和抽卡信息，以及如何获取这些内容的详细信息。
