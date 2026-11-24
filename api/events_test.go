@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"encoding/json/v2"
+	"slices"
 	"testing"
 	"time"
 )
@@ -162,5 +163,30 @@ func TestGetEventById(t *testing.T) {
 	}
 	if eventDetail.GetAttributesAndCharatersBonus() != 20 {
 		t.Fatalf("Expected event detail attributes and characters bonus to be 20, got %d", eventDetail.GetAttributesAndCharatersBonus())
+	}
+}
+
+func TestGetEventTitles(t *testing.T) {
+	client := NewApi("", 10*time.Second)
+	events, err := client.InitEvents(context.Background())
+	if err != nil {
+		t.Fatalf("Failed to initialize events: %v", err)
+	}
+	titles := events.GetEventTitleMap()
+	if len(titles) == 0 {
+		t.Fatal("Expected event titles to be non-empty")
+	}
+	for i := range titles {
+		if titles[i].Id == "" {
+			t.Fatal("Expected event ID to be non-empty")
+		}
+	}
+	for i := range titles {
+		if titles[i].Id == "311" {
+			if slices.Contains(titles[i].Titles, "交汇处，双子星相视而笑") {
+				return
+			}
+			t.Fatal("Expected to find event title '交汇处，双子星相视而笑' for ID '311', but did not")
+		}
 	}
 }

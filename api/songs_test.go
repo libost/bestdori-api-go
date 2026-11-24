@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"math"
+	"slices"
 	"testing"
 	"time"
 )
@@ -247,5 +248,30 @@ func TestGetSongById(t *testing.T) {
 	}
 	if sia.GetDescription(RegionCN) != "「Noble・Rose -歌至顶点-」活动追加歌曲" {
 		t.Fatalf("Expected song description '「Noble・Rose -歌至顶点-」活动追加歌曲', got '%s'", sia.GetDescription(RegionCN))
+	}
+}
+
+func TestGetSongTitles(t *testing.T) {
+	client := NewApi("", 10*time.Second)
+	songs, err := client.InitSongs(context.Background())
+	if err != nil {
+		t.Fatalf("Failed to initialize songs: %v", err)
+	}
+	titles := songs.GetSongTitleMap()
+	if len(titles) == 0 {
+		t.Fatal("Expected song titles to be non-empty")
+	}
+	for i := range titles {
+		if titles[i].Id == "" {
+			t.Fatal("Expected song ID to be non-empty")
+		}
+	}
+	for i := range titles {
+		if titles[i].Id == "306" {
+			if slices.Contains(titles[i].Titles, "SAVIOR OF SONG") {
+				return
+			}
+			t.Fatal("Expected to find song title 'SAVIOR OF SONG' for ID '306', but did not")
+		}
 	}
 }

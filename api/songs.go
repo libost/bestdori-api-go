@@ -153,6 +153,23 @@ func (s *SongsMap) UpdateSongs(ctx context.Context) error {
 	return nil
 }
 
+type SongTitleMap struct {
+	Id     string
+	Titles []string
+}
+
+// GetSongTitleMap retrieves the song titles for all songs in the SongsMap. It returns a slice of SongTitleMap, where each element contains the song ID and its corresponding titles.
+func (s *SongsMap) GetSongTitleMap() []SongTitleMap {
+	titles := make([]SongTitleMap, 0, len(*s))
+	for id, song := range *s {
+		titles = append(titles, SongTitleMap{
+			Id:     id,
+			Titles: song.MusicTitle,
+		})
+	}
+	return titles
+}
+
 // GetSongs retrieves the Song struct for the SongsMap struct. It returns an error if the song ID is not found in the SongsMap.
 func (r *RecentSongs) GetSong(ctx context.Context) (*Song, error) {
 	return r.api.GetSong(ctx, r.id)
@@ -488,6 +505,7 @@ func (s *Song) GetDescription(region Region) string {
 	return s.Description[region.Idx()]
 }
 
+// GetBPM retrieves the BPM (Beats Per Minute) of the song. It returns the first non-zero BPM value found in the song's BPM data. If no non-zero BPM is found, it returns 0.
 func (s *Song) GetBPM() int {
 	for _, bpm := range s.Bpm {
 		if bpm[0].Bpm != 0 {

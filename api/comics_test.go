@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"slices"
 	"testing"
 	"time"
 )
@@ -54,5 +55,30 @@ func TestGetComicById(t *testing.T) {
 	}
 	if len(chars) == 0 {
 		t.Fatal("Expected comic characters to be non-empty")
+	}
+}
+
+func TestGetComicTitles(t *testing.T) {
+	client := NewApi("", 10*time.Second)
+	comics, err := client.InitComics(context.Background())
+	if err != nil {
+		t.Fatalf("Failed to initialize comics: %v", err)
+	}
+	comicTitles := comics.GetComicTitleMap()
+	if len(comicTitles) == 0 {
+		t.Fatal("Expected comic titles to be non-empty")
+	}
+	for i := range comicTitles {
+		if comicTitles[i].Id == "" {
+			t.Fatal("Expected comic ID to be non-empty")
+		}
+	}
+	for i := range comicTitles {
+		if comicTitles[i].Id == "1469" {
+			if slices.Contains(comicTitles[i].Title, "第469話 「氷川式勉強術」") {
+				return
+			}
+			t.Fatal("Expected to find comic title '第469話 「氷川式勉強術」' for ID '1469', but did not")
+		}
 	}
 }

@@ -246,6 +246,23 @@ func (e *EventsMap) GetEvent(eventID string) (*Events, error) {
 	return nil, ErrEventNotFound
 }
 
+type EventTitleMap struct {
+	Id     string
+	Titles []string
+}
+
+// GetEventTitleMap returns a slice of EventTitleMap, which contains the event ID and the event title for each event in the EventsMap.
+func (e *EventsMap) GetEventTitleMap() []EventTitleMap {
+	titles := make([]EventTitleMap, 0, len(*e))
+	for id, event := range *e {
+		titles = append(titles, EventTitleMap{
+			Id:     id,
+			Titles: event.EventName,
+		})
+	}
+	return titles
+}
+
 // GetEvent retrieves an Event struct from the API based on the provided event ID.
 func (a *Api) GetEvent(ctx context.Context, eventID string) (*Event, error) {
 	if _, err := strconv.Atoi(eventID); err != nil {

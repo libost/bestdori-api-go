@@ -106,6 +106,23 @@ func (c *ComicsMap) GetComic(comicId string) (*Comics, error) {
 	return &comic, nil
 }
 
+type ComicTitleMap struct {
+	Id    string
+	Title []string
+}
+
+// GetComicTitleMap returns a slice of ComicTitleMap containing the comic IDs and their corresponding titles from the ComicsMap.
+func (c *ComicsMap) GetComicTitleMap() []ComicTitleMap {
+	titles := make([]ComicTitleMap, 0, len(*c))
+	for id, comic := range *c {
+		titles = append(titles, ComicTitleMap{
+			Id:    id,
+			Title: comic.Title,
+		})
+	}
+	return titles
+}
+
 // IsAvailable checks if the comic is available in the given region.
 //
 // It is recommended to use this method before calling any other methods that require the comic to be available in the specified region.

@@ -169,6 +169,23 @@ func (c *CardsMap) GetCard(cardId string) (*Cards, error) {
 	return nil, ErrCardNotFound
 }
 
+type CardTitleMap struct {
+	Id     string
+	Titles []string
+}
+
+// GetCardTitleMap returns a slice of CardTitleMap, each containing the card ID and its corresponding titles (prefixes) for all cards in the CardsMap.
+func (c *CardsMap) GetCardTitleMap() []CardTitleMap {
+	titles := make([]CardTitleMap, 0, len(*c))
+	for id, card := range *c {
+		titles = append(titles, CardTitleMap{
+			Id:     id,
+			Titles: card.Prefix,
+		})
+	}
+	return titles
+}
+
 // IsAvailable checks if the card is available in the given region. It returns true if the card has a non-zero release time for the specified region, indicating that it is available.
 //
 // It is recommended to use this method before calling GetCardName, GetSkillName, or GetArtsURL to ensure that the card is available in the desired region.

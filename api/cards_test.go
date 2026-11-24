@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"slices"
 	"testing"
 	"time"
 )
@@ -286,5 +287,30 @@ func TestGetCardById(t *testing.T) {
 	}
 	if cardtest.GetThumbnailFrameURL() != "https://bestdori.com/res/image/card-4.png" {
 		t.Fatalf("Expected card thumbnail frame URL 'https://bestdori.com/res/image/card-4.png', got '%s'", cardtest.GetThumbnailFrameURL())
+	}
+}
+
+func TestGetCardTitles(t *testing.T) {
+	client := NewApi("", 10*time.Second)
+	cardsMap, err := client.InitCards(context.Background())
+	if err != nil {
+		t.Fatalf("Failed to initialize cards: %v", err)
+	}
+	titles := cardsMap.GetCardTitleMap()
+	if len(titles) == 0 {
+		t.Fatal("Expected card titles to be non-empty")
+	}
+	for i := range titles {
+		if titles[i].Id == "" {
+			t.Fatal("Expected card ID to be non-empty")
+		}
+	}
+	for i := range titles {
+		if titles[i].Id == "947" {
+			if slices.Contains(titles[i].Titles, "日菜抽中的大奖") {
+				return
+			}
+			t.Fatal("Expected to find card title '日菜抽中的大奖' for ID '947', but did not")
+		}
 	}
 }

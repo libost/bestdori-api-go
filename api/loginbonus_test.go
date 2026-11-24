@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"slices"
 	"testing"
 	"time"
 )
@@ -95,5 +96,30 @@ func TestGetLoginBonusById(t *testing.T) {
 	}
 	if details.GetDetails(RegionJP)[0].GetSeq() != 1 {
 		t.Fatalf("Expected login bonus detail sequence to be 1, got %d", details.GetDetails(RegionJP)[0].GetSeq())
+	}
+}
+
+func TestGetLoginBonusTitles(t *testing.T) {
+	client := NewApi("", 10*time.Second)
+	loginBonuses, err := client.InitLoginBonuses(context.Background())
+	if err != nil {
+		t.Fatalf("Expected no error when initializing login bonuses, got error: %v", err)
+	}
+	titles := loginBonuses.GetLoginBonusesTitleMap()
+	if len(titles) == 0 {
+		t.Fatal("Expected login bonuses title map to be non-empty")
+	}
+	for i := range titles {
+		if titles[i].Id == "" {
+			t.Fatal("Expected login bonus ID to be non-empty")
+		}
+	}
+	for i := range titles {
+		if titles[i].Id == "1590" {
+			if slices.Contains(titles[i].Titles, "ガルパ×魔法少女ノ魔女裁判コラボ開催記念プレゼントPart1") {
+				return
+			}
+			t.Fatal("Expected to find login bonus title 'ガルパ×魔法少女ノ魔女裁判コラボ開催記念プレゼントPart1' for ID '1590', but did not")
+		}
 	}
 }

@@ -130,6 +130,23 @@ func (l *LoginBonusesMap) GetLoginBonus(loginBonusID string) (*LoginBonuses, err
 	return &loginBonuses, nil
 }
 
+type LoginBonusesTitleMap struct {
+	Id     string
+	Titles []string
+}
+
+// GetLoginBonusesTitleMap returns a slice of LoginBonusesTitleMap containing the ID and title of each login bonus in the map. It is useful for displaying a list of available login bonuses with their titles.
+func (l *LoginBonusesMap) GetLoginBonusesTitleMap() []LoginBonusesTitleMap {
+	titles := make([]LoginBonusesTitleMap, 0, len(*l))
+	for id, loginBonus := range *l {
+		titles = append(titles, LoginBonusesTitleMap{
+			Id:     id,
+			Titles: loginBonus.Caption,
+		})
+	}
+	return titles
+}
+
 // IsAvailable checks if the login bonus is available for the specified region. It returns true if the login bonus is available, otherwise false.
 func (l *LoginBonuses) IsAvailable(region Region) bool {
 	return !l.PublishedAt[region.Idx()].Time.IsZero()

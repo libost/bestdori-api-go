@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"slices"
 	"testing"
 	"time"
 )
@@ -125,5 +126,30 @@ func TestGetGachaById(t *testing.T) {
 	}
 	if result, err := gachaDetail.EmulateGachaDraw(gachaDetail.GetPaymentMethods()[0]); err != nil || len(result) != 10 {
 		t.Fatalf("Expected gacha detail emulated gacha draw to be 10, got '%d'", len(result))
+	}
+}
+
+func TestGetGachaTitles(t *testing.T) {
+	client := NewApi("", 10*time.Second)
+	gachas, err := client.InitGachas(context.Background())
+	if err != nil {
+		t.Fatalf("Failed to initialize gachas: %v", err)
+	}
+	titles := gachas.GetGachaTitleMap()
+	if len(titles) == 0 {
+		t.Fatal("Expected gacha titles to be non-empty")
+	}
+	for i := range titles {
+		if titles[i].Id == "" {
+			t.Fatal("Expected gacha ID to be non-empty")
+		}
+	}
+	for i := range titles {
+		if titles[i].Id == "1166" {
+			if slices.Contains(titles[i].Titles, "落涙のPouring Rainガチャ") {
+				return
+			}
+			t.Fatal("Expected to find gacha title '落涙のPouring Rainガチャ' for ID '1166', but did not")
+		}
 	}
 }

@@ -175,6 +175,23 @@ func (g *GachasMap) GetGacha(gachaID string) (*Gachas, error) {
 	return &gacha, nil
 }
 
+type GachaTitleMap struct {
+	Id     string
+	Titles []string
+}
+
+// GetGachaTitleMap retrieves a slice of GachaTitleMap containing the IDs and titles of all gachas in the GachasMap.
+func (g *GachasMap) GetGachaTitleMap() []GachaTitleMap {
+	titles := make([]GachaTitleMap, 0, len(*g))
+	for id, gacha := range *g {
+		titles = append(titles, GachaTitleMap{
+			Id:     id,
+			Titles: gacha.GachaName,
+		})
+	}
+	return titles
+}
+
 // GetGacha retrieves a specific Gacha by its ID. It returns an error if the Gacha is not found or if the API call fails.
 func (a *Api) GetGacha(ctx context.Context, gachaID string) (*Gacha, error) {
 	resp, err := a.do(ctx, http.MethodGet, "https://bestdori.com/api/gacha/"+gachaID+".json")

@@ -153,6 +153,25 @@ func (c *CharactersMap) GetCharacter(characterID string) (*Characters, error) {
 	return &character, nil
 }
 
+type CharNameMap struct {
+	Id    string
+	Names []string
+}
+
+// GetCharacterNameMap returns a slice of CharNameMap structs, each containing the character ID and a slice of names (including character names and nicknames) for all characters in the CharactersMap.
+func (c *CharactersMap) GetCharacterNameMap() []CharNameMap {
+	titles := make([]CharNameMap, 0, len(*c))
+	for id, character := range *c {
+		names := append([]string{}, character.CharacterName...)
+		names = append(names, character.Nickname...)
+		titles = append(titles, CharNameMap{
+			Id:    id,
+			Names: names,
+		})
+	}
+	return titles
+}
+
 func (a *Api) GetCharacter(ctx context.Context, characterID string) (*Character, error) {
 	return getCharacter(ctx, a, characterID)
 }

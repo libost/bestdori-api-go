@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"slices"
 	"testing"
 	"time"
 )
@@ -87,5 +88,31 @@ func TestGetCharacterById(t *testing.T) {
 	}
 	if !sayod.IsAvailable(RegionCN) {
 		t.Fatal("Expected character to be available in CN region")
+	}
+}
+
+func TestGetCharacterNames(t *testing.T) {
+	client := NewApi("", 10*time.Second)
+
+	charMap, err := client.InitCharacters(context.Background())
+	if err != nil {
+		t.Fatalf("Failed to initialize characters: %v", err)
+	}
+	nameMap := charMap.GetCharacterNameMap()
+	if len(nameMap) == 0 {
+		t.Fatal("Expected character name map to be non-empty")
+	}
+	for i := range nameMap {
+		if nameMap[i].Id == "" {
+			t.Fatal("Expected character ID to be non-empty")
+		}
+	}
+	for i := range nameMap {
+		if nameMap[i].Id == "22" {
+			if slices.Contains(nameMap[i].Names, "冰川 纱夜") {
+				return
+			}
+			t.Fatal("Expected to find character name '冰川 纱夜' for ID '22', but did not")
+		}
 	}
 }
