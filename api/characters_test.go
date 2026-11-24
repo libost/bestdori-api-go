@@ -19,7 +19,7 @@ func TestGetCharacterById(t *testing.T) {
 	if err = characters.UpdateCharacters(context.Background()); err != nil {
 		t.Fatalf("Failed to update characters: %v", err)
 	}
-	sayo, err := characters.GetCharacter(22)
+	sayo, err := characters.GetCharacter("22")
 	if err != nil {
 		t.Fatalf("Failed to get character by ID: %v", err)
 	}
@@ -58,7 +58,7 @@ func TestGetCharacterById(t *testing.T) {
 	if sayo.GetCharacterLastName(RegionCN) != "冰川" {
 		t.Fatalf("Expected character last name '冰川', got '%s'", sayo.GetCharacterLastName(RegionCN))
 	}
-	tomori, err := characters.GetCharacter(36)
+	tomori, err := characters.GetCharacter("36")
 	if err != nil {
 		t.Fatalf("Failed to get character by ID: %v", err)
 	}
@@ -68,7 +68,7 @@ func TestGetCharacterById(t *testing.T) {
 	if tomori.IsAvailable(RegionKR) {
 		t.Fatal("Expected character to be unavailable in KR region")
 	}
-	chu2, err := characters.GetCharacter(35)
+	chu2, err := characters.GetCharacter("35")
 	if err != nil {
 		t.Fatalf("Failed to get character by ID: %v", err)
 	}
@@ -78,7 +78,7 @@ func TestGetCharacterById(t *testing.T) {
 	if chu2.GetCharacterNickname(RegionJP) != "チュチュ" {
 		t.Fatalf("Expected character nickname 'チュチュ', got '%s'", chu2.GetCharacterNickname(RegionJP))
 	}
-	sayod, err := client.GetCharacter(context.Background(), 22)
+	sayod, err := client.GetCharacter(context.Background(), "22")
 	if err != nil {
 		t.Fatalf("Failed to get character by ID: %v", err)
 	}

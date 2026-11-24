@@ -12,6 +12,7 @@ import (
 
 type Characters struct {
 	api           *Api
+	id            string
 	etag          string
 	CharacterType string   `json:"characterType"`
 	CharacterName []string `json:"characterName"`
@@ -144,33 +145,33 @@ func (c *CharactersMap) UpdateCharacters(ctx context.Context) error {
 // Be aware that the Characters struct that is returned is a summary of the character data, and does not include all the details that can be found in the Character struct.
 //
 // If the character ID is not found in the CharactersMap, it returns an error.
-func (c *CharactersMap) GetCharacter(characterID int) (*Characters, error) {
-	character, exists := (*c)[strconv.Itoa(characterID)]
+func (c *CharactersMap) GetCharacter(characterID string) (*Characters, error) {
+	character, exists := (*c)[characterID]
 	if !exists {
 		return nil, errors.New("character not found")
 	}
 	return &character, nil
 }
 
-func (a *Api) GetCharacter(ctx context.Context, characterID int) (*Character, error) {
+func (a *Api) GetCharacter(ctx context.Context, characterID string) (*Character, error) {
 	return getCharacter(ctx, a, characterID)
 }
 
 // GetCharacter retrieves a Character struct from the API based on the Card.
 func (c *Cards) GetCharacter(ctx context.Context) (*Character, error) {
-	return getCharacter(ctx, c.api, c.CharacterID)
+	return getCharacter(ctx, c.api, strconv.Itoa(c.CharacterID))
 }
 
 // GetCharacter retrieves a Character struct from the API based on the Card.
 func (c *Card) GetCharacter(ctx context.Context) (*Character, error) {
-	return getCharacter(ctx, c.api, c.CharacterID)
+	return getCharacter(ctx, c.api, strconv.Itoa(c.CharacterID))
 }
 
 // GetCharacter retrieves a Character struct from the API based on the EventCharacters.
 //
 // It also returns the bonus percentage associated with the EventCharacters.
 func (e *EventCharacters) GetCharacter(ctx context.Context) (*Character, int, error) {
-	charId, _ := e.CharacterID.Int()
+	charId := e.CharacterID.String()
 	char, err := getCharacter(ctx, e.api, charId)
 	return char, e.Percent, err
 }
@@ -179,13 +180,13 @@ func (e *EventCharacters) GetCharacter(ctx context.Context) (*Character, int, er
 //
 // It also returns the bonus percentage associated with the EventsCharacters.
 func (e *EventsCharacters) GetCharacter(ctx context.Context) (*Character, int, error) {
-	charId, _ := e.CharacterID.Int()
+	charId := e.CharacterID.String()
 	char, err := getCharacter(ctx, e.api, charId)
 	return char, e.Percent, err
 }
 
-func getCharacter(ctx context.Context, api *Api, characterID int) (*Character, error) {
-	url := "https://bestdori.com/api/characters/" + strconv.Itoa(characterID) + ".json"
+func getCharacter(ctx context.Context, api *Api, characterID string) (*Character, error) {
+	url := "https://bestdori.com/api/characters/" + characterID + ".json"
 	resp, err := api.do(ctx, http.MethodGet, url)
 	if err != nil {
 		return nil, err
@@ -208,6 +209,10 @@ func (c *Characters) IsAvailable(region Region) bool {
 		return false
 	}
 	return true
+}
+
+func (c *Characters) GetCharacter(ctx context.Context) (*Character, error) {
+	return getCharacter(ctx, c.api, c.id)
 }
 
 // GetCharacterName returns the character name for the given region.
@@ -290,7 +295,7 @@ func (c *Character) GetCharacterNickname(region Region) string {
 func (c *Comics) GetCharacters(ctx context.Context) ([]*Character, error) {
 	characters := make([]*Character, 0, len(c.CharacterId))
 	for _, charId := range c.CharacterId {
-		character, err := getCharacter(ctx, c.api, charId)
+		character, err := getCharacter(ctx, c.api, strconv.Itoa(charId))
 		if err != nil {
 			return nil, err
 		}
