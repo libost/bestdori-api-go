@@ -7,7 +7,9 @@ import (
 	"encoding/json/v2"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
+	"net/http/cookiejar"
 	"strconv"
 	"time"
 )
@@ -15,6 +17,8 @@ import (
 var (
 	// ErrNilCtx is returned when a nil context is passed to an API method.
 	ErrNilCtx = errors.New("context is nil")
+	// ErrNoUsernameOrPassword is returned when a username or password is not provided for login.
+	ErrNoUsernameOrPassword = errors.New("username and password must be provided")
 )
 
 const (
@@ -275,6 +279,7 @@ type Api struct {
 	client *http.Client
 }
 
+// NewApi creates a Bestdori API client.
 func NewApi(httpClient *http.Client) *Api {
 	if httpClient == nil {
 		httpClient = &http.Client{Timeout: 10 * time.Second}
@@ -284,6 +289,51 @@ func NewApi(httpClient *http.Client) *Api {
 	return &Api{
 		client: httpClient,
 	}
+}
+
+// NewApiWithLogin creates a new Api instance and logs in with the provided username and password.
+//
+// If the username or password is empty, it returns a ErrNoUsernameOrPassword error. If the login request fails, it returns an error with the status code and response body.
+//
+// At the moment, login won't give you any additional access to the API, but it may be useful for future features.
+func NewApiWithLogin(ctx context.Context, httpClient *http.Client, username, password string) (*Api, error) {
+	api := NewApi(httpClient)
+	if username == "" || password == "" {
+		return nil, ErrNoUsernameOrPassword
+	}
+	url := "https://bestdori.com/api/user/login"
+	jar, err := cookiejar.New(nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create cookie jar: %w", err)
+	}
+	api.client.Jar = jar
+
+	reqBody := map[string]string{
+		"username": username,
+		"password": password,
+	}
+	reqBodyJSON, err := json.Marshal(reqBody)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal request body: %w", err)
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewBuffer(reqBodyJSON))
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := api.client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to send request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("login failed: status code %d, response: %s", resp.StatusCode, string(bodyBytes))
+	}
+	return api, nil
 }
 
 var defaultApi = NewApi(nil)

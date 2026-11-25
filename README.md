@@ -57,7 +57,7 @@ func main() {
 
 - Zero dependencies, only the standard library is used.
 - Easy to use and well-documented.
-- More than a API wrapper, it provides additional features such as [event cutoff prediction](tutorials/fetching_event_data.md#Cutoff-Prediction), [gacha emulation](tutorials/fetching_gacha_data.md#Gacha-Emulation), and more.
+- More than an API wrapper, it provides additional features such as [event cutoff prediction](tutorials/fetching_event_data.md#Cutoff-Prediction), [gacha emulation](tutorials/fetching_gacha_data.md#Gacha-Emulation), and more.
 
 ## Tutorials
 
