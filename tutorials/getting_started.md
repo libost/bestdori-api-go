@@ -22,13 +22,19 @@ import (
 )
 
 func main() {
-    client := bestdoriapi.NewClient("", 10*time.Second) // You can set a timeout as needed
+    client := bestdoriapi.NewClient(nil) // You can pass a custom http.Client if needed, otherwise pass nil for default settings.
 }
 ```
 
 >[!TIP]
-> You can also set a proxy if needed by passing the proxy URL as the first argument to `NewClient`.
-> Only HTTP and HTTPS proxies are supported.
+> You can also set a proxy if needed by passing the proxy URL inside a `http.Client` when creating the client. For example:
+>```go
+>client := bestdoriapi.NewClient(&http.Client{
+>    Transport: &http.Transport{
+>        Proxy: http.ProxyURL(proxyURL),
+>    },
+>})
+>```
 
 ## Summary
 In this tutorial, we covered the basics of setting up the Bestdori API client in Go. You learned how to install the package and create a client instance to start interacting with the API. 

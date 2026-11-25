@@ -5,7 +5,6 @@ import (
 	"encoding/json/v2"
 	"slices"
 	"testing"
-	"time"
 )
 
 func TestEventsAttributesUnmarshal(t *testing.T) {
@@ -22,7 +21,7 @@ func TestEventsAttributesUnmarshal(t *testing.T) {
 }
 
 func TestGetEventById(t *testing.T) {
-	client := NewApi("", 10*time.Second)
+	client := NewApi(nil)
 	// Initialize events first
 	events, err := client.InitEvents(context.Background())
 	if err != nil {
@@ -167,7 +166,7 @@ func TestGetEventById(t *testing.T) {
 }
 
 func TestGetEventTitles(t *testing.T) {
-	client := NewApi("", 10*time.Second)
+	client := NewApi(nil)
 	events, err := client.InitEvents(context.Background())
 	if err != nil {
 		t.Fatalf("Failed to initialize events: %v", err)

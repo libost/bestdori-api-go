@@ -1,12 +1,16 @@
 package bestdoriapigo
 
 import (
+	"net/http"
 	"testing"
-	"time"
 )
 
 func TestNewClient(t *testing.T) {
-	client := NewClient("", 10*time.Second)
+	client := NewClient(&http.Client{
+		Transport: &http.Transport{
+			Proxy: http.ProxyURL(nil), // You can set a proxy URL here if needed
+		},
+	})
 	if client == nil {
 		t.Error("Expected non-nil client")
 	}

@@ -4,11 +4,10 @@ import (
 	"context"
 	"slices"
 	"testing"
-	"time"
 )
 
 func TestGetCharacterById(t *testing.T) {
-	client := NewApi("", 10*time.Second)
+	client := NewApi(nil)
 	// Initialize characters first
 	characters, err := client.InitCharacters(context.Background())
 	if err != nil {
@@ -92,7 +91,7 @@ func TestGetCharacterById(t *testing.T) {
 }
 
 func TestGetCharacterNames(t *testing.T) {
-	client := NewApi("", 10*time.Second)
+	client := NewApi(nil)
 
 	charMap, err := client.InitCharacters(context.Background())
 	if err != nil {

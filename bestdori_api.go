@@ -1,7 +1,7 @@
 package bestdoriapigo
 
 import (
-	"time"
+	"net/http"
 
 	"github.com/libost/bestdori-api-go/api"
 )
@@ -13,6 +13,6 @@ import (
 type API = api.Api
 
 // NewClient creates a Bestdori API client.
-func NewClient(proxy string, timeout time.Duration) *API {
-	return api.NewApi(proxy, timeout)
+func NewClient(httpClient *http.Client) *API {
+	return api.NewApi(httpClient)
 }

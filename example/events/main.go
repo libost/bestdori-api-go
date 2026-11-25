@@ -3,14 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
-	"time"
 
 	bestdoriapi "github.com/libost/bestdori-api-go"
 	"github.com/libost/bestdori-api-go/api"
 )
 
 func main() {
-	client := bestdoriapi.NewClient("", 10*time.Second)
+	client := bestdoriapi.NewClient(nil)
 
 	events, err := client.GetEvent(context.TODO(), "311")
 	if err != nil {

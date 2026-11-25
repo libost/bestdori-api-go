@@ -4,14 +4,13 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"time"
 
 	bestdoriapi "github.com/libost/bestdori-api-go"
 	"github.com/libost/bestdori-api-go/api"
 )
 
 func main() {
-	client := bestdoriapi.NewClient("", 10*time.Second)
+	client := bestdoriapi.NewClient(nil)
 
 	comicsMap, err := client.InitComics(context.TODO())
 	if err != nil {

@@ -8,7 +8,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"net/url"
 	"strconv"
 	"time"
 )
@@ -273,37 +272,21 @@ type BestdoriAPIError struct {
 }
 
 type Api struct {
-	client  *http.Client
-	proxy   string
-	timeout time.Duration
+	client *http.Client
 }
 
-func NewApi(proxy string, timeout time.Duration) *Api {
-	if timeout <= 1*time.Second {
-		timeout = 10 * time.Second
+func NewApi(httpClient *http.Client) *Api {
+	if httpClient == nil {
+		httpClient = &http.Client{Timeout: 10 * time.Second}
+	} else if httpClient.Timeout <= 1*time.Second {
+		httpClient.Timeout = 10 * time.Second
 	}
-
-	var transport *http.Transport
-	if defaultTransport, ok := http.DefaultTransport.(*http.Transport); ok {
-		transport = defaultTransport.Clone()
-	} else {
-		transport = &http.Transport{Proxy: http.ProxyFromEnvironment}
-	}
-	if proxy != "" {
-		proxyURL, err := url.Parse(proxy)
-		if err == nil && proxyURL.Scheme != "" && proxyURL.Host != "" {
-			transport.Proxy = http.ProxyURL(proxyURL)
-		}
-	}
-
 	return &Api{
-		client:  &http.Client{Transport: transport, Timeout: timeout},
-		proxy:   proxy,
-		timeout: timeout,
+		client: httpClient,
 	}
 }
 
-var defaultApi = NewApi("", 10*time.Second)
+var defaultApi = NewApi(nil)
 
 func (a *Api) do(ctx context.Context, method, requestURL string) (*http.Response, error) {
 	if a == nil || a.client == nil {

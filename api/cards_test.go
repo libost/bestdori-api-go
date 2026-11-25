@@ -8,7 +8,7 @@ import (
 )
 
 func TestGetCardById(t *testing.T) {
-	client := NewApi("", 10*time.Second)
+	client := NewApi(nil)
 	// Initialize cards first
 	cardsMap, err := client.InitCards(context.Background())
 	if err != nil {
@@ -291,7 +291,7 @@ func TestGetCardById(t *testing.T) {
 }
 
 func TestGetCardTitles(t *testing.T) {
-	client := NewApi("", 10*time.Second)
+	client := NewApi(nil)
 	cardsMap, err := client.InitCards(context.Background())
 	if err != nil {
 		t.Fatalf("Failed to initialize cards: %v", err)

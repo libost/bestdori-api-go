@@ -5,11 +5,10 @@ import (
 	"math"
 	"slices"
 	"testing"
-	"time"
 )
 
 func TestGetSongById(t *testing.T) {
-	client := NewApi("", 10*time.Second)
+	client := NewApi(nil)
 	// Initialize songs first
 	songs, err := client.InitSongs(context.Background())
 	if err != nil {
@@ -252,7 +251,7 @@ func TestGetSongById(t *testing.T) {
 }
 
 func TestGetSongTitles(t *testing.T) {
-	client := NewApi("", 10*time.Second)
+	client := NewApi(nil)
 	songs, err := client.InitSongs(context.Background())
 	if err != nil {
 		t.Fatalf("Failed to initialize songs: %v", err)

@@ -4,11 +4,10 @@ import (
 	"context"
 	"slices"
 	"testing"
-	"time"
 )
 
 func TestGetLoginBonusById(t *testing.T) {
-	client := NewApi("", 10*time.Second)
+	client := NewApi(nil)
 	// Initialize login bonuses first
 	loginBonuses, err := client.InitLoginBonuses(context.Background())
 	if err != nil {
@@ -100,7 +99,7 @@ func TestGetLoginBonusById(t *testing.T) {
 }
 
 func TestGetLoginBonusTitles(t *testing.T) {
-	client := NewApi("", 10*time.Second)
+	client := NewApi(nil)
 	loginBonuses, err := client.InitLoginBonuses(context.Background())
 	if err != nil {
 		t.Fatalf("Expected no error when initializing login bonuses, got error: %v", err)

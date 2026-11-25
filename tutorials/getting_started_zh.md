@@ -14,19 +14,24 @@ go get github.com/libost/bestdori-api-go
 ```go
 package main
 
-import (
-    "time"
-    
+import (    
     bestdoriapi "github.com/libost/bestdori-api-go"
 )
 
 func main() {
-    client := bestdoriapi.NewClient("", 10*time.Second) // 您可以根据需要设置超时时间
+    client := bestdoriapi.NewClient(nil) // 您可以根据需要传递一个自定义的 http.Client，否则传递 nil 使用默认设置。
 }
 ```
 
 >[!TIP]
-> 如果需要，您还可以通过将代理 URL 作为 `NewClient` 的第一个参数传递来设置代理。仅支持 HTTP 和 HTTPS 代理。
+> 如果需要，您还可以通过将代理 URL 传递给 `http.Client` 来设置代理。例如：
+>```go
+>client := bestdoriapi.NewClient(&http.Client{
+>    Transport: &http.Transport{
+>        Proxy: http.ProxyURL(proxyURL),
+>    },
+>})
+>```
 
 ## 总结
 在本教程中，我们介绍了如何在 Go 中设置 Bestdori API 客户端。您学习了如何安装该包并创建客户端实例，以开始与 API 交互。

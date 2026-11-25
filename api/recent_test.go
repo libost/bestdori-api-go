@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json/v2"
 	"testing"
-	"time"
 )
 
 func TestGetRecentLoginBonusForRegionParsesLoginBonuses(t *testing.T) {
@@ -37,7 +36,7 @@ func TestGetRecentLoginBonusForRegionParsesLoginBonuses(t *testing.T) {
 }
 
 func TestGetRecentByRegion(t *testing.T) {
-	client := NewApi("", 10*time.Second)
+	client := NewApi(nil)
 	// Get recent data first
 	recent, err := client.GetRecent(context.Background())
 	if err != nil {

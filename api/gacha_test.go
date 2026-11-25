@@ -4,11 +4,10 @@ import (
 	"context"
 	"slices"
 	"testing"
-	"time"
 )
 
 func TestGetGachaById(t *testing.T) {
-	client := NewApi("", 10*time.Second)
+	client := NewApi(nil)
 	// Initialize gachas first
 	gachas, err := client.InitGachas(context.Background())
 	if err != nil {
@@ -130,7 +129,7 @@ func TestGetGachaById(t *testing.T) {
 }
 
 func TestGetGachaTitles(t *testing.T) {
-	client := NewApi("", 10*time.Second)
+	client := NewApi(nil)
 	gachas, err := client.InitGachas(context.Background())
 	if err != nil {
 		t.Fatalf("Failed to initialize gachas: %v", err)

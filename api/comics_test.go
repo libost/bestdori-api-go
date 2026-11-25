@@ -4,11 +4,10 @@ import (
 	"context"
 	"slices"
 	"testing"
-	"time"
 )
 
 func TestGetComicById(t *testing.T) {
-	client := NewApi("", 10*time.Second)
+	client := NewApi(nil)
 	// Initialize comics first
 	comics, err := client.InitComics(context.Background())
 	if err != nil {
@@ -59,7 +58,7 @@ func TestGetComicById(t *testing.T) {
 }
 
 func TestGetComicTitles(t *testing.T) {
-	client := NewApi("", 10*time.Second)
+	client := NewApi(nil)
 	comics, err := client.InitComics(context.Background())
 	if err != nil {
 		t.Fatalf("Failed to initialize comics: %v", err)
