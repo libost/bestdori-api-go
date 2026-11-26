@@ -6,3 +6,6 @@
 
 # Ignore example output files
 example_output
+
+# Ignore sanitized profile output files (these files are generated for testing purposes and may contain sensitive information)
+sanitized_profile.json

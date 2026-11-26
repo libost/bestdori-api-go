@@ -1,7 +1,9 @@
 package bestdoriapigo
 
 import (
+	"context"
 	"net/http"
+	"os"
 	"testing"
 )
 
@@ -11,6 +13,17 @@ func TestNewClient(t *testing.T) {
 			Proxy: http.ProxyURL(nil), // You can set a proxy URL here if needed
 		},
 	})
+	if client == nil {
+		t.Error("Expected non-nil client")
+	}
+}
+
+// Before running this test, make sure to set the environment variables BESTDORI_API_USER and BESTDORI_API_PSK with valid credentials.
+func TestNewClientWithLogin(t *testing.T) {
+	client, err := NewClientWithLogin(context.TODO(), nil, os.Getenv("BESTDORI_API_USER"), os.Getenv("BESTDORI_API_PSK"))
+	if err != nil {
+		t.Fatalf("NewClientWithLogin returned an error: %v", err)
+	}
 	if client == nil {
 		t.Error("Expected non-nil client")
 	}

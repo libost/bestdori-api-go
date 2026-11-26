@@ -160,6 +160,39 @@ func (r Region) Idx() int {
 	return indexHelper(r.String())
 }
 
+func (r *Region) UnmarshalJSON(data []byte) error {
+	data = bytes.TrimSpace(data)
+	if bytes.Equal(data, []byte("null")) {
+		*r = ""
+		return nil
+	}
+
+	var regionStr string
+	if err := json.Unmarshal(data, &regionStr); err != nil {
+		return err
+	}
+
+	switch regionStr {
+	case "jp":
+		*r = RegionJP
+	case "en":
+		*r = RegionEN
+	case "kr":
+		*r = RegionKR
+	case "tw":
+		*r = RegionTW
+	case "cn":
+		*r = RegionCN
+	default:
+		return fmt.Errorf("invalid region: %s", regionStr)
+	}
+	return nil
+}
+
+func (r Region) MarshalJSON() ([]byte, error) {
+	return json.Marshal(string(r))
+}
+
 // Any is a type that can hold any JSON value, including strings and numbers. It is used to handle fields that can have different types in the JSON data.
 type Any string
 
@@ -366,6 +399,21 @@ func (a *Api) update(ctx context.Context, method, requestURL, etag string) (*htt
 	if etag != "" {
 		req.Header.Set("If-None-Match", etag)
 	}
+	return a.client.Do(req)
+}
+
+func (a *Api) doWithBody(ctx context.Context, method, requestURL string, body []byte) (*http.Response, error) {
+	if a == nil || a.client == nil {
+		a = defaultApi
+	}
+	if ctx == nil {
+		return nil, ErrNilCtx
+	}
+	req, err := http.NewRequestWithContext(ctx, method, requestURL, bytes.NewBuffer(body))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/json")
 	return a.client.Do(req)
 }
 
