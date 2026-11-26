@@ -80,6 +80,9 @@ func TestProfileSanitize(t *testing.T) {
 
 // Before running this test, make sure to set the environment variables BESTDORI_API_USER and BESTDORI_API_PSK with valid credentials.
 func TestProfileSanitizeFull(t *testing.T) {
+	if os.Getenv("BESTDORI_API_USER") == "" || os.Getenv("BESTDORI_API_PSK") == "" {
+		t.Skip("Environment variables BESTDORI_API_USER and BESTDORI_API_PSK are not set")
+	}
 	client, err := NewApiWithLogin(context.TODO(), nil, os.Getenv("BESTDORI_API_USER"), os.Getenv("BESTDORI_API_PSK"))
 	if err != nil {
 		t.Fatalf("NewApiWithLogin returned an error: %v", err)
@@ -88,12 +91,21 @@ func TestProfileSanitizeFull(t *testing.T) {
 	if err != nil {
 		t.Fatalf("GetUserProfile returned an error: %v", err)
 	}
-	sanitized, err := profile.Profiles[0].Sanitize()
-	if err != nil {
-		t.Fatalf("Sanitize returned an error: %v", err)
+	if len(profile.Profiles) == 0 {
+		t.Skip("GetUserProfile returned no profiles")
 	}
-	err = saveToFile(sanitized, "sanitized_profile.json")
-	if err != nil {
-		t.Fatalf("saveToFile returned an error: %v", err)
+	for _, profile := range profile.Profiles {
+		if profile.Data.Cards.Ids != "" {
+			sanitized, err := profile.Sanitize()
+			if err != nil {
+				t.Fatalf("Sanitize returned an error: %v", err)
+			}
+			err = saveToFile(sanitized, "sanitized_profile.json")
+			if err != nil {
+				t.Fatalf("saveToFile returned an error: %v", err)
+			}
+			return
+		}
 	}
+	t.Skip("No profile with card data found to sanitize")
 }

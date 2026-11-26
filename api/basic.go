@@ -350,13 +350,7 @@ func NewApiWithLogin(ctx context.Context, httpClient *http.Client, username, pas
 		return nil, fmt.Errorf("failed to marshal request body: %w", err)
 	}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewBuffer(reqBodyJSON))
-	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err)
-	}
-	req.Header.Set("Content-Type", "application/json")
-
-	resp, err := api.client.Do(req)
+	resp, err := api.doWithBody(ctx, http.MethodPost, url, reqBodyJSON)
 	if err != nil {
 		return nil, fmt.Errorf("failed to send request: %w", err)
 	}

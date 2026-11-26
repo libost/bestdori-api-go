@@ -14,3 +14,4 @@ When contributing to the project, please keep security in mind. Avoid introducin
 ## Some Tips for Testing
 
 - A typical test for the whole project is to run `go test ./...` in the root directory. This will run all tests in the project and report any failures. Keep in mind that it may take 40-80 seconds to run all tests, depending on your machine's performance and Internet connection speed. If you want to run tests for a specific package, you can navigate to that package's directory and run `go test` there.
+- Tests that require a Bestdori account to run will be skipped if the `BESTDORI_API_USER` and `BESTDORI_API_PSK` environment variables are not set. You can set these variables in your shell or in your IDE's run configuration.

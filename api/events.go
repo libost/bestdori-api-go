@@ -13,6 +13,7 @@ import (
 	"io"
 	"maps"
 	"net/http"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -539,8 +540,11 @@ func getRates(ctx context.Context, api *Api) (RatesMap, error) {
 //
 // Be aware that the tier parameter is specific to the region, and the function will return an error if the tier is not valid for the given region.
 //
-// See api.*TierList for the valid tiers for each region(* stands for region, "cn", "tw" etc).
+// See api.*TierList for the valid tiers for each region(* stands for region, "cn", "tw" etc). You can also use the api.Region.Tiers() method to get the valid tiers for a specific region.
 func (e *Event) GetRates(ctx context.Context, region Region, tier int) (Rates, error) {
+	if !slices.Contains(region.Tiers(), tier) {
+		return Rates{}, fmt.Errorf("tier %d is not valid for region %s", tier, region.String())
+	}
 	rates, err := getRates(ctx, e.api)
 	if err != nil {
 		return Rates{}, err
@@ -561,8 +565,11 @@ func (e *Event) GetRates(ctx context.Context, region Region, tier int) (Rates, e
 //
 // Be aware that the tier parameter is specific to the region, and the function will return an error if the tier is not valid for the given region.
 //
-// See api.*TierList for the valid tiers for each region(* stands for region, "cn", "tw" etc).
+// See api.*TierList for the valid tiers for each region(* stands for region, "cn", "tw" etc). You can also use the api.Region.Tiers() method to get the valid tiers for a specific region.
 func (e *Events) GetRates(ctx context.Context, region Region, tier int) (Rates, error) {
+	if !slices.Contains(region.Tiers(), tier) {
+		return Rates{}, fmt.Errorf("tier %d is not valid for region %s", tier, region.String())
+	}
 	rates, err := getRates(ctx, e.api)
 	if err != nil {
 		return Rates{}, err
