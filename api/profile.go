@@ -24,35 +24,39 @@ type UserProfile struct {
 // Profile uses RLE.
 type Profile struct {
 	Data struct {
-		Cards struct {
-			Eps      []int  `json:"eps"`
-			Ids      string `json:"ids"`
-			Arts     []int  `json:"arts"`
-			Levels   []int  `json:"levels"`
-			Skills   []int  `json:"skills"`
-			Trains   []int  `json:"trains"`
-			Masters  []int  `json:"masters"`
-			Excludes []any  `json:"excludes"`
-		} `json:"cards"`
-		Items struct {
-			Menu            []int `json:"Menu"`
-			MyGo            []int `json:"MyGo"`
-			Plaza           []int `json:"Plaza"`
-			Roselia         []int `json:"Roselia"`
-			Everyone        []int `json:"Everyone"`
-			Magazine        []int `json:"Magazine"`
-			Afterglow       []int `json:"Afterglow"`
-			Morfonica       []int `json:"Morfonica"`
-			Potentials      []int `json:"potentials"`
-			PoppinParty     []int `json:"PoppinParty"`
-			RaiseASuilen    []int `json:"RaiseASuilen"`
-			PastelPalettes  []int `json:"PastelPalettes"`
-			HelloHappyWorld []int `json:"HelloHappyWorld"`
-		} `json:"items"`
+		Cards CardsProfile `json:"cards"`
+		Items ItemsProfile `json:"items"`
 	} `json:"data"`
 	Name        string `json:"name"`
 	Server      int    `json:"server"`
 	Compression string `json:"compression"`
+}
+
+type CardsProfile struct {
+	Eps      []int  `json:"eps"`
+	Ids      string `json:"ids"`
+	Arts     []int  `json:"arts"`
+	Levels   []int  `json:"levels"`
+	Skills   []int  `json:"skills"`
+	Trains   []int  `json:"trains"`
+	Masters  []int  `json:"masters"`
+	Excludes []any  `json:"excludes"`
+}
+
+type ItemsProfile struct {
+	Menu            []int `json:"Menu"`
+	MyGo            []int `json:"MyGo"`
+	Plaza           []int `json:"Plaza"`
+	Roselia         []int `json:"Roselia"`
+	Everyone        []int `json:"Everyone"`
+	Magazine        []int `json:"Magazine"`
+	Afterglow       []int `json:"Afterglow"`
+	Morfonica       []int `json:"Morfonica"`
+	Potentials      []int `json:"potentials"`
+	PoppinParty     []int `json:"PoppinParty"`
+	RaiseASuilen    []int `json:"RaiseASuilen"`
+	PastelPalettes  []int `json:"PastelPalettes"`
+	HelloHappyWorld []int `json:"HelloHappyWorld"`
 }
 
 // GetUserProfile fetches the user profile from the Bestdori API.
@@ -122,6 +126,22 @@ func decodeProfileRLE(encoded []int, size int) ([]int, error) {
 	return output, nil
 }
 
+func encodeProfileRLE(values []int) []int {
+	if len(values) == 0 {
+		return nil
+	}
+	encoded := make([]int, 0, len(values)*2)
+	for start := 0; start < len(values); {
+		end := start + 1
+		for end < len(values) && values[end] == values[start] {
+			end++
+		}
+		encoded = append(encoded, end-start, values[start])
+		start = end
+	}
+	return encoded
+}
+
 // UploadUserProfile uploads the provided user profile to the Bestdori API.
 //
 // It requires the API client to have cookies set (i.e., the user must be logged in).
@@ -162,13 +182,13 @@ type SanitizedUserProfile struct {
 }
 
 type CardInfo struct {
-	ID     int  `json:"id"`
-	Level  int  `json:"level"`
-	Master int  `json:"master"`
-	Skill  int  `json:"skill"`
-	Train  bool `json:"train"`
-	Eps    int  `json:"eps"`
-	Arts   int  `json:"arts"`
+	ID      int  `json:"id"`
+	Level   int  `json:"level"`
+	Master  int  `json:"master"`
+	Skill   int  `json:"skill"`
+	Trained bool `json:"trained"`
+	Eps     int  `json:"eps"`
+	Arts    int  `json:"arts"`
 }
 
 // Sanitize processes the Profile data and returns a SanitizedUserProfile with structured card information.
@@ -208,16 +228,64 @@ func (p *Profile) Sanitize() (*SanitizedUserProfile, error) {
 	}
 	for i := range id {
 		result.Cards[i] = CardInfo{
-			ID:     id[i],
-			Eps:    decoded[0][i],
-			Arts:   decoded[1][i],
-			Level:  decoded[2][i],
-			Skill:  decoded[3][i],
-			Train:  decoded[4][i] != 0,
-			Master: decoded[5][i],
+			ID:      id[i],
+			Eps:     decoded[0][i],
+			Arts:    decoded[1][i],
+			Level:   decoded[2][i],
+			Skill:   decoded[3][i],
+			Trained: decoded[4][i] != 0,
+			Master:  decoded[5][i],
 		}
 	}
 	return result, nil
+}
+
+func (s *SanitizedUserProfile) Desanitize() (*Profile, error) {
+	if len(s.Items) > 0 {
+		return nil, errors.New("cannot desanitize items: no item-to-profile mapping is defined")
+	}
+
+	ids := make([]uint16, len(s.Cards))
+	for i, card := range s.Cards {
+		if card.ID < 0 || card.ID > 65535 {
+			return nil, fmt.Errorf("card %d has ID out of uint16 range: %d", i, card.ID)
+		}
+		ids[i] = uint16(card.ID)
+	}
+
+	profile := &Profile{
+		Name:   s.Name,
+		Server: s.Server.Idx(),
+	}
+	if profile.Server < 0 {
+		return nil, fmt.Errorf("invalid profile server: %q", s.Server)
+	}
+	profile.Data.Cards.Ids = encodeUserProfile(ids)
+
+	eps := make([]int, len(s.Cards))
+	arts := make([]int, len(s.Cards))
+	levels := make([]int, len(s.Cards))
+	skills := make([]int, len(s.Cards))
+	trains := make([]int, len(s.Cards))
+	masters := make([]int, len(s.Cards))
+	for i, card := range s.Cards {
+		eps[i] = card.Eps
+		arts[i] = card.Arts
+		levels[i] = card.Level
+		skills[i] = card.Skill
+		masters[i] = card.Master
+		if card.Trained {
+			trains[i] = 1
+		}
+	}
+	profile.Data.Cards.Eps = encodeProfileRLE(eps)
+	profile.Data.Cards.Arts = encodeProfileRLE(arts)
+	profile.Data.Cards.Levels = encodeProfileRLE(levels)
+	profile.Data.Cards.Skills = encodeProfileRLE(skills)
+	profile.Data.Cards.Trains = encodeProfileRLE(trains)
+	profile.Data.Cards.Masters = encodeProfileRLE(masters)
+
+	return profile, nil
 }
 
 // saveToFile saves the sanitized user profile to a JSON file with the specified filename.
@@ -239,3 +307,26 @@ func saveToFile(profile *SanitizedUserProfile, filename string) error {
 	_, err = file.Write(data)
 	return err
 }
+
+type EventPlan struct {
+	EventID string   `json:"event_id"`
+	Region  Region   `json:"region"`
+	Team    []string `json:"team"`
+}
+
+type Team struct {
+	Members       []string `json:"members"`
+	Pt            int      `json:"pt"`
+	PtBonus       int      `json:"pt_bonus"`
+	Ep            int      `json:"ep"`
+	EpRoom        int      `json:"ep_room"`
+	BandPower     int      `json:"band_power"`
+	BandPowerRaw  int      `json:"band_power_raw"`
+	BandItem      int      `json:"band_item"`
+	AttrItem      string   `json:"attr_item"`
+	ParameterItem string   `json:"parameter_item"`
+}
+
+// func (s *SanitizedUserProfile) EventPlanner(event *Event) {}
+
+// "items":{"PoppinParty":[1,1,2,4,1,1,1,4,1,1,1,4],"Afterglow":[1,4,1,1,1,4,1,1,1,2,2,4],"HelloHappyWorld":[1,0,1,6,1,4,1,2,3,4],"PastelPalettes":[1,1,1,6,1,4,1,1,2,4,1,2],"Roselia":[1,4,1,2,1,4,1,2,1,4,1,6,1,4],"RaiseASuilen":[2,4,1,1,1,4,1,2,2,4],"Morfonica":[3,4,1,2,1,4,2,2],"MyGO":[1,2,2,4,1,2,3,4],"Everyone":[2,4,1,1,1,4,1,1,2,4],"Magazine":[1,4,1,1,1,4],"Plaza":[1,4,1,2,2,4],"Menu":[1,4,1,2,2,4],"potentials":[40,1]}}}

@@ -211,20 +211,14 @@ func (a *Api) GetGacha(ctx context.Context, gachaID string) (*Gacha, error) {
 //
 // It is recommended to use this method before calling functions like GetTitle.
 func (g *Gachas) IsAvailable(region Region) bool {
-	if g.GachaName[region.Idx()] == "" {
-		return false
-	}
-	return true
+	return g.GachaName[region.Idx()] != ""
 }
 
 // IsAvailable checks if the Gacha is available in the specified region.
 //
 // It is recommended to use this method before calling functions like GetTitle.
 func (g *Gacha) IsAvailable(region Region) bool {
-	if g.GachaName[region.Idx()] == "" {
-		return false
-	}
-	return true
+	return g.GachaName[region.Idx()] != ""
 }
 
 // GetGacha retrieves the Gacha associated with the RecentGachas. It returns an error if the Gacha is not found or if the API call fails.

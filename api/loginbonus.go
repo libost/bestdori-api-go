@@ -36,7 +36,6 @@ type LoginBonus struct {
 }
 
 type LoginBonusDetails struct {
-	api          *Api
 	LoginBonusId int `json:"loginBonusId"`
 	Days         int `json:"days"`
 	// ResourceType is the type of the resource granted by the login bonus. It can be "star", "stamp", "practice_ticket", etc.
@@ -149,7 +148,7 @@ func (l *LoginBonusesMap) GetLoginBonusesTitleMap() []LoginBonusesTitleMap {
 
 // IsAvailable checks if the login bonus is available for the specified region. It returns true if the login bonus is available, otherwise false.
 func (l *LoginBonuses) IsAvailable(region Region) bool {
-	return !l.PublishedAt[region.Idx()].Time.IsZero()
+	return !l.PublishedAt[region.Idx()].IsZero()
 }
 
 // GetType returns the type of the login bonus.
@@ -237,7 +236,7 @@ func (a *Api) GetLoginBonus(ctx context.Context, loginBonusID string) (*LoginBon
 
 // IsAvailable checks if the login bonus is available for the specified region. It returns true if the login bonus is available, otherwise false.
 func (l *LoginBonus) IsAvailable(region Region) bool {
-	return !l.PublishedAt[region.Idx()].Time.IsZero()
+	return !l.PublishedAt[region.Idx()].IsZero()
 }
 
 // GetType returns the type of the login bonus.

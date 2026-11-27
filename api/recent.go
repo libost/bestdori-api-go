@@ -88,7 +88,7 @@ func (r *Recent) UpdateRecent(ctx context.Context) error {
 func (r *Recent) GetRecentSongsForRegion(region Region) []RecentSongs {
 	results := make([]RecentSongs, 0)
 	for id, song := range r.Songs {
-		if !song.PublishedAt[region.Idx()].Time.IsZero() {
+		if !song.PublishedAt[region.Idx()].IsZero() {
 			if shouldCollectSong(song.PublishedAt, region.Idx()) {
 				song.id = id
 				song.api = r.api
@@ -100,14 +100,14 @@ func (r *Recent) GetRecentSongsForRegion(region Region) []RecentSongs {
 }
 
 func shouldCollectSong(publishedAt []Timestamp, idx int) bool {
-	currentPubTime := publishedAt[idx].Time.Unix()
+	currentPubTime := publishedAt[idx].Unix()
 
 	validValueCount := 0
 	for _, value := range publishedAt {
-		if value.Time.IsZero() {
+		if value.IsZero() {
 			continue
 		}
-		pubTime := value.Time.Unix()
+		pubTime := value.Unix()
 		validValueCount++
 		if pubTime > currentPubTime {
 			return false
@@ -126,8 +126,8 @@ func (r *Recent) GetRecentEventsForRegion(region Region) []RecentEvents {
 	results := make([]RecentEvents, 0)
 	now := time.Now()
 	for id, event := range r.Events {
-		if !event.StartAt[region.Idx()].Time.IsZero() {
-			if event.StartAt[region.Idx()].Time.Before(now) && event.EndAt[region.Idx()].Time.After(now) {
+		if !event.StartAt[region.Idx()].IsZero() {
+			if event.StartAt[region.Idx()].Before(now) && event.EndAt[region.Idx()].After(now) {
 				event.id = id
 				event.api = r.api
 				results = append(results, event)
@@ -139,8 +139,8 @@ func (r *Recent) GetRecentEventsForRegion(region Region) []RecentEvents {
 	}
 	if len(results) == 0 {
 		for id, event := range r.Events {
-			if !event.StartAt[region.Idx()].Time.IsZero() {
-				if event.StartAt[region.Idx()].Time.After(now) || event.EndAt[region.Idx()].Time.Before(now) {
+			if !event.StartAt[region.Idx()].IsZero() {
+				if event.StartAt[region.Idx()].After(now) || event.EndAt[region.Idx()].Before(now) {
 					event.id = id
 					event.api = r.api
 					results = append(results, event)
@@ -152,8 +152,8 @@ func (r *Recent) GetRecentEventsForRegion(region Region) []RecentEvents {
 		maxVal := 0
 		maxIdx := 0
 		for r, event := range results {
-			if event.StartAt[region.Idx()].Time.Unix() > int64(maxVal) {
-				maxVal = int(event.StartAt[region.Idx()].Time.Unix())
+			if event.StartAt[region.Idx()].Unix() > int64(maxVal) {
+				maxVal = int(event.StartAt[region.Idx()].Unix())
 				maxIdx = r
 			}
 		}
@@ -169,8 +169,8 @@ func (r *Recent) GetRecentGachasForRegion(region Region) []RecentGachas {
 	results := make([]RecentGachas, 0)
 	now := time.Now()
 	for id, gacha := range r.Gacha {
-		if !gacha.PublishedAt[region.Idx()].Time.IsZero() {
-			if gacha.PublishedAt[region.Idx()].Time.Before(now) && gacha.ClosedAt[region.Idx()].Time.After(now) {
+		if !gacha.PublishedAt[region.Idx()].IsZero() {
+			if gacha.PublishedAt[region.Idx()].Before(now) && gacha.ClosedAt[region.Idx()].After(now) {
 				gacha.id = id
 				gacha.api = r.api
 				results = append(results, gacha)
@@ -194,8 +194,8 @@ func (r *Recent) GetRecentLoginBonusForRegion(region Region) []RecentLoginBonus 
 		if idx >= len(loginBonus.PublishedAt) || idx >= len(loginBonus.ClosedAt) {
 			continue
 		}
-		if !loginBonus.PublishedAt[idx].Time.IsZero() {
-			if loginBonus.PublishedAt[idx].Time.Before(now) && loginBonus.ClosedAt[idx].Time.After(now) {
+		if !loginBonus.PublishedAt[idx].IsZero() {
+			if loginBonus.PublishedAt[idx].Before(now) && loginBonus.ClosedAt[idx].After(now) {
 				loginBonus.id = id
 				loginBonus.api = r.api
 				results = append(results, loginBonus)

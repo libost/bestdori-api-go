@@ -270,7 +270,7 @@ func (t *Timestamp) UnmarshalJSON(data []byte) error {
 }
 
 func (t Timestamp) MarshalJSON() ([]byte, error) {
-	if t.Time.IsZero() {
+	if t.IsZero() {
 		return []byte("null"), nil
 	}
 	return strconv.AppendInt(nil, t.UnixMilli(), 10), nil
@@ -299,7 +299,7 @@ func (d Timeduration) MarshalJSON() ([]byte, error) {
 	if d.Duration == 0 {
 		return []byte("null"), nil
 	}
-	seconds := d.Duration.Seconds()
+	seconds := d.Seconds()
 	return fmt.Appendf(nil, "%.3f", seconds), nil
 }
 

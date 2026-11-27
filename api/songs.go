@@ -226,10 +226,7 @@ func (s *Song) GetType() string {
 //
 // This function is useful for determining if a song can be accessed in a specific region, but it does not guarantee that the song can be played. For checking playability, refer to the IsPlayable method.
 func (s *Songs) IsAvailable(region Region) bool {
-	if s.PublishedAt[region.Idx()].Time.IsZero() {
-		return false
-	}
-	return true
+	return !s.PublishedAt[region.Idx()].IsZero()
 }
 
 // IsAvailable checks if the song is available in the given region. It returns true if the song has been published in the specified region.
@@ -238,10 +235,7 @@ func (s *Songs) IsAvailable(region Region) bool {
 //
 // This function is useful for determining if a song can be accessed in a specific region, but it does not guarantee that the song can be played. For checking playability, refer to the IsPlayable method.
 func (s *Song) IsAvailable(region Region) bool {
-	if s.PublishedAt[region.Idx()].Time.IsZero() {
-		return false
-	}
-	return true
+	return !s.PublishedAt[region.Idx()].IsZero()
 }
 
 // IsPlayable checks if the song is playable in the given region. It returns true if the song is available and has not been closed in that region.
@@ -250,7 +244,7 @@ func (s *Songs) IsPlayable(region Region) bool {
 		return false
 	}
 	now := time.Now()
-	if !s.ClosedAt[region.Idx()].Time.IsZero() && s.ClosedAt[region.Idx()].Time.Before(now) {
+	if !s.ClosedAt[region.Idx()].IsZero() && s.ClosedAt[region.Idx()].Before(now) {
 		return false
 	}
 	return true
@@ -262,7 +256,7 @@ func (s *Song) IsPlayable(region Region) bool {
 		return false
 	}
 	now := time.Now()
-	if !s.ClosedAt[region.Idx()].Time.IsZero() && s.ClosedAt[region.Idx()].Time.Before(now) {
+	if !s.ClosedAt[region.Idx()].IsZero() && s.ClosedAt[region.Idx()].Before(now) {
 		return false
 	}
 	return true
@@ -370,7 +364,7 @@ func (s *Songs) HasSpecialDifficulty(region Region) bool {
 	if len(s.Difficulty) < 5 {
 		return false
 	}
-	if s.Difficulty["4"].PublishedAt[region.Idx()].Time.IsZero() {
+	if s.Difficulty["4"].PublishedAt[region.Idx()].IsZero() {
 		return false
 	}
 	return true
@@ -381,7 +375,7 @@ func (s *Song) HasSpecialDifficulty(region Region) bool {
 	if len(s.Difficulty) < 5 {
 		return false
 	}
-	if s.Difficulty["4"].PublishedAt[region.Idx()].Time.IsZero() {
+	if s.Difficulty["4"].PublishedAt[region.Idx()].IsZero() {
 		return false
 	}
 	return true

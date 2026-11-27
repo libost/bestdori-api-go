@@ -191,10 +191,7 @@ func (c *CardsMap) GetCardTitleMap() []CardTitleMap {
 // It is recommended to use this method before calling GetCardName, GetSkillName, or GetArtsURL to ensure that the card is available in the desired region.
 func (c *Cards) IsAvailable(region Region) bool {
 	idx := indexHelper(region.String())
-	if c.ReleasedAt[idx].Time.IsZero() {
-		return false
-	}
-	return true
+	return !c.ReleasedAt[idx].IsZero()
 }
 
 func getCard(ctx context.Context, api *Api, cardId string) (*Card, error) {
@@ -236,10 +233,7 @@ func (e *EventMembers) GetCard(ctx context.Context) (*Card, int, error) {
 // It is recommended to use this method before calling GetCardName, GetSkillName, or GetArtsURL to ensure that the card is available in the desired region.
 func (c *Card) IsAvailable(region Region) bool {
 	idx := indexHelper(region.String())
-	if c.ReleasedAt[idx].Time.IsZero() {
-		return false
-	}
-	return true
+	return !c.ReleasedAt[idx].IsZero()
 }
 
 // GetCardName returns the name of the card for the given region. It returns an empty string if the card is not available in the specified region.

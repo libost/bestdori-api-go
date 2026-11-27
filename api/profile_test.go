@@ -69,12 +69,44 @@ func TestProfileSanitize(t *testing.T) {
 		t.Fatalf("Sanitize returned an error: %v", err)
 	}
 	want := []CardInfo{
-		{ID: 1001, Eps: 1, Arts: 1, Level: 30, Skill: 2, Train: true, Master: 5},
+		{ID: 1001, Eps: 1, Arts: 1, Level: 30, Skill: 2, Trained: true, Master: 5},
 		{ID: 1002, Eps: 1, Arts: 1, Level: 1, Skill: 2, Master: 5},
 		{ID: 1003, Arts: 1, Level: 1, Skill: 2, Master: 0},
 	}
 	if !reflect.DeepEqual(got.Cards, want) {
 		t.Fatalf("Sanitize cards = %+v, want %+v", got.Cards, want)
+	}
+
+	desanitized, err := got.Desanitize()
+	if err != nil {
+		t.Fatalf("Desanitize returned an error: %v", err)
+	}
+	roundTrip, err := desanitized.Sanitize()
+	if err != nil {
+		t.Fatalf("Sanitize after Desanitize returned an error: %v", err)
+	}
+	if !reflect.DeepEqual(roundTrip, got) {
+		t.Fatalf("Sanitize(Desanitize(profile)) = %+v, want %+v", roundTrip, got)
+	}
+}
+
+func TestSanitizedProfileDesanitizeRejectsInvalidCardID(t *testing.T) {
+	profile := &SanitizedUserProfile{
+		Server: RegionJP,
+		Cards:  []CardInfo{{ID: 65536}},
+	}
+	if _, err := profile.Desanitize(); err == nil {
+		t.Fatal("Desanitize accepted a card ID outside the uint16 range")
+	}
+}
+
+func TestSanitizedProfileDesanitizeRejectsUnmappedItems(t *testing.T) {
+	profile := &SanitizedUserProfile{
+		Server: RegionJP,
+		Items:  map[string]int{"item": 1},
+	}
+	if _, err := profile.Desanitize(); err == nil {
+		t.Fatal("Desanitize silently discarded items without a profile mapping")
 	}
 }
 

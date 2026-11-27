@@ -127,10 +127,7 @@ func (c *ComicsMap) GetComicTitleMap() []ComicTitleMap {
 //
 // It is recommended to use this method before calling any other methods that require the comic to be available in the specified region.
 func (c *Comics) IsAvailable(region Region) bool {
-	if c.PublicStartAt[region.Idx()].Time.IsZero() {
-		return false
-	}
-	return true
+	return !c.PublicStartAt[region.Idx()].IsZero()
 }
 
 // GetTitle returns the title of the comic for the given region.

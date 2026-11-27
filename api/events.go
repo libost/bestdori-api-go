@@ -138,7 +138,6 @@ type EventMembers struct {
 }
 
 type EventLimitBreaks struct {
-	api     *Api
 	EventID int     `json:"eventId"`
 	Rarity  int     `json:"rarity"`
 	Rank    int     `json:"rank"`
@@ -298,10 +297,7 @@ func getEvent(ctx context.Context, api *Api, eventID string) (*Event, error) {
 // It is recommended to use this method before calling other methods that depend on the event's availability, such as GetEventName.
 func (e *Events) IsAvailable(region Region) bool {
 	idx := indexHelper(region.String())
-	if e.StartAt[idx].Time.IsZero() || e.EndAt[idx].Time.IsZero() {
-		return false
-	}
-	return true
+	return !e.StartAt[idx].IsZero() && !e.EndAt[idx].IsZero()
 }
 
 // GetTitle returns the title of the event for the given region.
@@ -383,10 +379,7 @@ func (e *Events) GetRewardCards(ctx context.Context) ([]*Card, error) {
 // It is recommended to use this method before calling other methods that depend on the event's availability, such as GetEventName.
 func (e *Event) IsAvailable(region Region) bool {
 	idx := indexHelper(region.String())
-	if e.StartAt[idx].Time.IsZero() || e.EndAt[idx].Time.IsZero() {
-		return false
-	}
-	return true
+	return !e.StartAt[idx].IsZero() && !e.EndAt[idx].IsZero()
 }
 
 // GetTitle returns the title of the event for the given region.

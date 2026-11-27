@@ -224,10 +224,7 @@ func getCharacter(ctx context.Context, api *Api, characterID string) (*Character
 // It is recommended to use this method before calling any other methods that require the character to be available in the specified region.
 func (c *Characters) IsAvailable(region Region) bool {
 	idx := indexHelper(region.String())
-	if c.CharacterName[idx] == "" {
-		return false
-	}
-	return true
+	return c.CharacterName[idx] != ""
 }
 
 func (c *Characters) GetCharacter(ctx context.Context) (*Character, error) {
@@ -270,10 +267,7 @@ func (c *Characters) GetCharacterNickname(region Region) string {
 //
 // It is recommended to use this method before calling any other methods that require the character to be available in the specified region.
 func (c *Character) IsAvailable(region Region) bool {
-	if c.CharacterName[region.Idx()] == "" {
-		return false
-	}
-	return true
+	return c.CharacterName[region.Idx()] != ""
 }
 
 // GetCharacterName returns the character name for the given region.
