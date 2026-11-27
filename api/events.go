@@ -20,8 +20,11 @@ import (
 )
 
 var (
-	ErrEventNotFound     = errors.New("event not found")
-	ErrNotValidEventId   = errors.New("not a valid event id")
+	// ErrEventNotFound is returned when the event ID is not found in the events map.
+	ErrEventNotFound = errors.New("event not found")
+	// ErrNotValidEventId is returned when the event ID is not a valid integer.
+	ErrNotValidEventId = errors.New("not a valid event id")
+	// ErrTooLessDataPoints is returned when the latest data point is less than 1 day from the event start time, which may lead to inaccurate predictions.
 	ErrTooLessDataPoints = errors.New("too less data points to predict")
 )
 

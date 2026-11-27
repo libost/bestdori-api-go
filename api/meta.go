@@ -58,6 +58,7 @@ func (m SongMetaFactors) Efficiency(fever bool, skillBoost, accuracy, length flo
 	return eff
 }
 
+// InitSongMeta initializes the SongMeta by fetching the song meta data from the API. It returns an error if the request fails or if the response cannot be unmarshaled into a SongMeta.
 func (a *Api) InitSongMeta(ctx context.Context) (*SongMeta, error) {
 	resp, err := a.do(ctx, http.MethodGet, songsMetaURL)
 	if err != nil {
