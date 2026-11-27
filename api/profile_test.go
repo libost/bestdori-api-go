@@ -100,16 +100,6 @@ func TestSanitizedProfileDesanitizeRejectsInvalidCardID(t *testing.T) {
 	}
 }
 
-func TestSanitizedProfileDesanitizeRejectsUnmappedItems(t *testing.T) {
-	profile := &SanitizedUserProfile{
-		Server: RegionJP,
-		Items:  map[string]int{"item": 1},
-	}
-	if _, err := profile.Desanitize(); err == nil {
-		t.Fatal("Desanitize silently discarded items without a profile mapping")
-	}
-}
-
 // Before running this test, make sure to set the environment variables BESTDORI_API_USER and BESTDORI_API_PSK with valid credentials.
 func TestProfileSanitizeFull(t *testing.T) {
 	if os.Getenv("BESTDORI_API_USER") == "" || os.Getenv("BESTDORI_API_PSK") == "" {
@@ -140,4 +130,57 @@ func TestProfileSanitizeFull(t *testing.T) {
 		}
 	}
 	t.Skip("No profile with card data found to sanitize")
+}
+
+// Before running this test, make sure to set the environment variables BESTDORI_API_USER and BESTDORI_API_PSK with valid credentials.
+func TestDesanitizeProfile(t *testing.T) {
+	if os.Getenv("BESTDORI_API_USER") == "" || os.Getenv("BESTDORI_API_PSK") == "" {
+		t.Skip("Environment variables BESTDORI_API_USER and BESTDORI_API_PSK are not set")
+	}
+	client, err := NewApiWithLogin(context.TODO(), nil, os.Getenv("BESTDORI_API_USER"), os.Getenv("BESTDORI_API_PSK"))
+	if err != nil {
+		t.Fatalf("NewApiWithLogin returned an error: %v", err)
+	}
+	profile, err := client.GetUserProfile(context.TODO())
+	if err != nil {
+		t.Fatalf("GetUserProfile returned an error: %v", err)
+	}
+	if len(profile.Profiles) == 0 {
+		t.Skip("GetUserProfile returned no profiles")
+	}
+	for _, profile := range profile.Profiles {
+		if profile.Data.Cards.Ids != "" {
+			sanitized, err := profile.Sanitize()
+			if err != nil {
+				t.Fatalf("Sanitize returned an error: %v", err)
+			}
+			desanitized, err := sanitized.Desanitize()
+			if err != nil {
+				t.Fatalf("Desanitize returned an error: %v", err)
+			}
+			if desanitized.Data.Cards.Ids != profile.Data.Cards.Ids {
+				t.Fatalf("Desanitize did not return the original profile. Expected: %+v, Got: %+v", profile.Data.Cards.Ids, desanitized.Data.Cards.Ids)
+			}
+			if desanitized.Data.Cards.Eps != nil && !reflect.DeepEqual(desanitized.Data.Cards.Eps, profile.Data.Cards.Eps) {
+				t.Fatalf("Desanitize did not return the original profile. Expected: %+v, Got: %+v", profile.Data.Cards.Eps, desanitized.Data.Cards.Eps)
+			}
+			if desanitized.Data.Cards.Arts != nil && !reflect.DeepEqual(desanitized.Data.Cards.Arts, profile.Data.Cards.Arts) {
+				t.Fatalf("Desanitize did not return the original profile. Expected: %+v, Got: %+v", profile.Data.Cards.Arts, desanitized.Data.Cards.Arts)
+			}
+			if desanitized.Data.Cards.Levels != nil && !reflect.DeepEqual(desanitized.Data.Cards.Levels, profile.Data.Cards.Levels) {
+				t.Fatalf("Desanitize did not return the original profile. Expected: %+v, Got: %+v", profile.Data.Cards.Levels, desanitized.Data.Cards.Levels)
+			}
+			if desanitized.Data.Cards.Skills != nil && !reflect.DeepEqual(desanitized.Data.Cards.Skills, profile.Data.Cards.Skills) {
+				t.Fatalf("Desanitize did not return the original profile. Expected: %+v, Got: %+v", profile.Data.Cards.Skills, desanitized.Data.Cards.Skills)
+			}
+			if desanitized.Data.Cards.Trains != nil && !reflect.DeepEqual(desanitized.Data.Cards.Trains, profile.Data.Cards.Trains) {
+				t.Fatalf("Desanitize did not return the original profile. Expected: %+v, Got: %+v", profile.Data.Cards.Trains, desanitized.Data.Cards.Trains)
+			}
+			if desanitized.Data.Cards.Masters != nil && !reflect.DeepEqual(desanitized.Data.Cards.Masters, profile.Data.Cards.Masters) {
+				t.Fatalf("Desanitize did not return the original profile. Expected: %+v, Got: %+v", profile.Data.Cards.Masters, desanitized.Data.Cards.Masters)
+			}
+			return
+		}
+	}
+	t.Skip("No profile with card data found to desanitize")
 }

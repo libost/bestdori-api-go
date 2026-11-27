@@ -45,7 +45,7 @@ type CardsProfile struct {
 
 type ItemsProfile struct {
 	Menu            []int `json:"Menu"`
-	MyGo            []int `json:"MyGo"`
+	MyGo            []int `json:"MyGO"`
 	Plaza           []int `json:"Plaza"`
 	Roselia         []int `json:"Roselia"`
 	Everyone        []int `json:"Everyone"`
@@ -175,10 +175,10 @@ func (a *Api) UploadUserProfile(ctx context.Context, userProfile *UserProfile) e
 }
 
 type SanitizedUserProfile struct {
-	Name   string         `json:"name"`
-	Server Region         `json:"server"`
-	Cards  []CardInfo     `json:"cards"`
-	Items  map[string]int `json:"items"`
+	Name   string     `json:"name"`
+	Server Region     `json:"server"`
+	Cards  []CardInfo `json:"cards"`
+	Items  ItemInfo   `json:"items"`
 }
 
 type CardInfo struct {
@@ -189,6 +189,22 @@ type CardInfo struct {
 	Trained bool `json:"trained"`
 	Eps     int  `json:"eps"`
 	Arts    int  `json:"arts"`
+}
+
+type ItemInfo struct {
+	PoppinParty     [7]int  `json:"PoppinParty"`
+	Afterglow       [7]int  `json:"Afterglow"`
+	HelloHappyWorld [7]int  `json:"HelloHappyWorld"`
+	PastelPalettes  [7]int  `json:"PastelPalettes"`
+	Roselia         [7]int  `json:"Roselia"`
+	RaiseASuilen    [7]int  `json:"RaiseASuilen"`
+	Morfonica       [7]int  `json:"Morfonica"`
+	MyGO            [7]int  `json:"MyGO"`
+	Everyone        [7]int  `json:"Everyone"`
+	Magazine        [3]int  `json:"Magazine"`
+	Plaza           [4]int  `json:"Plaza"`
+	Menu            [4]int  `json:"Menu"`
+	Potentials      [40]int `json:"potentials"`
 }
 
 // Sanitize processes the Profile data and returns a SanitizedUserProfile with structured card information.
@@ -206,7 +222,7 @@ func (p *Profile) Sanitize() (*SanitizedUserProfile, error) {
 		Name:   p.Name,
 		Server: regionHelper(p.Server),
 		Cards:  make([]CardInfo, len(id)),
-		Items:  make(map[string]int),
+		Items:  ItemInfo{},
 	}
 	attributes := []struct {
 		name string
@@ -237,14 +253,75 @@ func (p *Profile) Sanitize() (*SanitizedUserProfile, error) {
 			Master:  decoded[5][i],
 		}
 	}
+	poppinParty, err := decodeProfileRLE(p.Data.Items.PoppinParty, len(result.Items.PoppinParty))
+	if err != nil {
+		return nil, fmt.Errorf("decode PoppinParty items: %w", err)
+	}
+	copy(result.Items.PoppinParty[:], poppinParty)
+	afterglow, err := decodeProfileRLE(p.Data.Items.Afterglow, len(result.Items.Afterglow))
+	if err != nil {
+		return nil, fmt.Errorf("decode Afterglow items: %w", err)
+	}
+	copy(result.Items.Afterglow[:], afterglow)
+	helloHappyWorld, err := decodeProfileRLE(p.Data.Items.HelloHappyWorld, len(result.Items.HelloHappyWorld))
+	if err != nil {
+		return nil, fmt.Errorf("decode HelloHappyWorld items: %w", err)
+	}
+	copy(result.Items.HelloHappyWorld[:], helloHappyWorld)
+	pastelPalettes, err := decodeProfileRLE(p.Data.Items.PastelPalettes, len(result.Items.PastelPalettes))
+	if err != nil {
+		return nil, fmt.Errorf("decode PastelPalettes items: %w", err)
+	}
+	copy(result.Items.PastelPalettes[:], pastelPalettes)
+	roselia, err := decodeProfileRLE(p.Data.Items.Roselia, len(result.Items.Roselia))
+	if err != nil {
+		return nil, fmt.Errorf("decode Roselia items: %w", err)
+	}
+	copy(result.Items.Roselia[:], roselia)
+	raiseASuilen, err := decodeProfileRLE(p.Data.Items.RaiseASuilen, len(result.Items.RaiseASuilen))
+	if err != nil {
+		return nil, fmt.Errorf("decode RaiseASuilen items: %w", err)
+	}
+	copy(result.Items.RaiseASuilen[:], raiseASuilen)
+	morfonica, err := decodeProfileRLE(p.Data.Items.Morfonica, len(result.Items.Morfonica))
+	if err != nil {
+		return nil, fmt.Errorf("decode Morfonica items: %w", err)
+	}
+	copy(result.Items.Morfonica[:], morfonica)
+	myGO, err := decodeProfileRLE(p.Data.Items.MyGo, len(result.Items.MyGO))
+	if err != nil {
+		return nil, fmt.Errorf("decode MyGO items: %w", err)
+	}
+	copy(result.Items.MyGO[:], myGO)
+	everyone, err := decodeProfileRLE(p.Data.Items.Everyone, len(result.Items.Everyone))
+	if err != nil {
+		return nil, fmt.Errorf("decode Everyone items: %w", err)
+	}
+	copy(result.Items.Everyone[:], everyone)
+	magazine, err := decodeProfileRLE(p.Data.Items.Magazine, len(result.Items.Magazine))
+	if err != nil {
+		return nil, fmt.Errorf("decode Magazine items: %w", err)
+	}
+	copy(result.Items.Magazine[:], magazine)
+	plaza, err := decodeProfileRLE(p.Data.Items.Plaza, len(result.Items.Plaza))
+	if err != nil {
+		return nil, fmt.Errorf("decode Plaza items: %w", err)
+	}
+	copy(result.Items.Plaza[:], plaza)
+	menu, err := decodeProfileRLE(p.Data.Items.Menu, len(result.Items.Menu))
+	if err != nil {
+		return nil, fmt.Errorf("decode Menu items: %w", err)
+	}
+	copy(result.Items.Menu[:], menu)
+	potentials, err := decodeProfileRLE(p.Data.Items.Potentials, len(result.Items.Potentials))
+	if err != nil {
+		return nil, fmt.Errorf("decode Potentials items: %w", err)
+	}
+	copy(result.Items.Potentials[:], potentials)
 	return result, nil
 }
 
 func (s *SanitizedUserProfile) Desanitize() (*Profile, error) {
-	if len(s.Items) > 0 {
-		return nil, errors.New("cannot desanitize items: no item-to-profile mapping is defined")
-	}
-
 	ids := make([]uint16, len(s.Cards))
 	for i, card := range s.Cards {
 		if card.ID < 0 || card.ID > 65535 {
@@ -284,6 +361,19 @@ func (s *SanitizedUserProfile) Desanitize() (*Profile, error) {
 	profile.Data.Cards.Skills = encodeProfileRLE(skills)
 	profile.Data.Cards.Trains = encodeProfileRLE(trains)
 	profile.Data.Cards.Masters = encodeProfileRLE(masters)
+	profile.Data.Items.PoppinParty = encodeProfileRLE(s.Items.PoppinParty[:])
+	profile.Data.Items.Afterglow = encodeProfileRLE(s.Items.Afterglow[:])
+	profile.Data.Items.HelloHappyWorld = encodeProfileRLE(s.Items.HelloHappyWorld[:])
+	profile.Data.Items.PastelPalettes = encodeProfileRLE(s.Items.PastelPalettes[:])
+	profile.Data.Items.Roselia = encodeProfileRLE(s.Items.Roselia[:])
+	profile.Data.Items.RaiseASuilen = encodeProfileRLE(s.Items.RaiseASuilen[:])
+	profile.Data.Items.Morfonica = encodeProfileRLE(s.Items.Morfonica[:])
+	profile.Data.Items.MyGo = encodeProfileRLE(s.Items.MyGO[:])
+	profile.Data.Items.Everyone = encodeProfileRLE(s.Items.Everyone[:])
+	profile.Data.Items.Magazine = encodeProfileRLE(s.Items.Magazine[:])
+	profile.Data.Items.Plaza = encodeProfileRLE(s.Items.Plaza[:])
+	profile.Data.Items.Menu = encodeProfileRLE(s.Items.Menu[:])
+	profile.Data.Items.Potentials = encodeProfileRLE(s.Items.Potentials[:])
 
 	return profile, nil
 }
@@ -326,7 +416,3 @@ type Team struct {
 	AttrItem      string   `json:"attr_item"`
 	ParameterItem string   `json:"parameter_item"`
 }
-
-// func (s *SanitizedUserProfile) EventPlanner(event *Event) {}
-
-// "items":{"PoppinParty":[1,1,2,4,1,1,1,4,1,1,1,4],"Afterglow":[1,4,1,1,1,4,1,1,1,2,2,4],"HelloHappyWorld":[1,0,1,6,1,4,1,2,3,4],"PastelPalettes":[1,1,1,6,1,4,1,1,2,4,1,2],"Roselia":[1,4,1,2,1,4,1,2,1,4,1,6,1,4],"RaiseASuilen":[2,4,1,1,1,4,1,2,2,4],"Morfonica":[3,4,1,2,1,4,2,2],"MyGO":[1,2,2,4,1,2,3,4],"Everyone":[2,4,1,1,1,4,1,1,2,4],"Magazine":[1,4,1,1,1,4],"Plaza":[1,4,1,2,2,4],"Menu":[1,4,1,2,2,4],"potentials":[40,1]}}}
